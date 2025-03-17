@@ -1,0 +1,13 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0.20
+    container_name: mosquitto
+    user: 1000:1000
+    volumes:
+      - ./mnt/config:/mosquitto/config:rw
+      - ./mnt/data:/mosquitto/data:rw
+    environment:
+      - TZ=Europe/Paris
+    network_mode: bridge
+    ports: 
+      - 8080:8080

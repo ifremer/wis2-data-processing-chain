@@ -1,0 +1,211 @@
+{
+    "id": "urn:wmo:md:int-coriolis:EO:EUM:DAT:MSG:ARGO",
+    "conformsTo": [
+        "http://wis.wmo.int/spec/wcmp/2/conf/core"
+    ],
+    "type": "Feature",
+    "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [
+                    -81,
+                    -79
+                ],
+                [
+                    -81,
+                    79
+                ],
+                [
+                    81,
+                    79
+                ],
+                [
+                    81,
+                    -79
+                ],
+                [
+                    -81,
+                    -79
+                ]
+            ]
+        ]
+    },
+    "time": {
+        "interval": [
+            "2004-01-19",
+            ".."
+        ],
+        "resolution": "PT15M"
+    },
+    "properties": {
+        "created": "2024-12-03T14:00:00Z",
+        "updated": "2024-12-03T14:00:00Z",
+        "type": "dataset",
+        "title": "Argo marine floats vertical profiles",
+        "description": "Argo is an international program to observe the interior of the ocean with a fleet of profiling floats drifting in the deep ocean currents (https://argo.ucsd.edu). Argo GDAC is a dataset of 10 billion in situ ocean observations from 20 000 profiling floats (4.000 active) which started 25 years ago. Argo GDAC is a collection of 3 million NetCDF files. It is a major asset for ocean and climate science, a contributor to IOCCP reports. Argo data are available with a one click download https://doi.org/10.17882/42182",
+        "status": {
+            "id": "operational",
+            "title": "dataset is in 24/7 operation",
+            "url": "https://data-argo.ifremer.fr"
+        },
+        "keywords": [
+            "oceans"
+        ],
+        "keywordsCodespace": "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode",
+        "language": {
+            "code": "en"
+        },
+        "contacts": [
+            {
+                "name": "Coriolis Global Data Assembly Centre",
+                "organization": "Ifremer",
+                "phones": [
+                    {
+                        "value": "+33298224040"
+                    }
+                ],
+                "emails": [
+                    {
+                        "value": "sismer@ifremer.fr"
+                    }
+                ],
+                "addresses": [
+                    {
+                        "deliveryPoint": [
+                            "1625 Route de Sainte Anne CS 10070"
+                        ],
+                        "city": "Plouzane",
+                        "postalCode": "29280",
+                        "country": "France"
+                    }
+                ],
+                "links": [
+                    {
+                        "href": "https://www.ifremer.fr",
+                        "rel": "about",
+                        "type": "text/html"
+                    },
+                    {
+                        "href": "https://co.ifremer.fr/co/etc/logo/logo-ifremer-blue.jpg",
+                        "type": "image/svg+xml",
+                        "rel": "preview"
+                    }
+                ],
+                "roles": [
+                    "host",
+                    "producer"
+                ]
+            }
+        ],
+        "themes": [
+            {
+                "concepts": [
+                    {
+                        "id": "Oceanography"
+                    }
+                ],
+                "scheme": "https://wis.wmo.int/2012/codelists/WMOCodeLists.xml#WMO_CategoryCode#MD_KeywordTypeCode_theme"
+            },
+            {
+                "concepts": [
+                    {
+                        "id": "drifting-ocean-profilers"
+                    }
+                ],
+                "scheme": "https://codes.wmo.int/wis/topic-hierarchy/earth-system-discipline"
+            },
+            {
+                "concepts": [
+                    {
+                        "id": "GlobalExchange"
+                    }
+                ],
+                "scheme": "https://wis.wmo.int/2012/codelists/WMOCodeLists.xml#WMO_CategoryCode#MD_KeywordTypeCode_dataCentre"
+            }
+        ],
+        "formats": [
+            {
+                "mediaType": "application/x-cor-hrit"
+            }
+        ],
+        "contactPoint": "https://data.ifremer.fr/Centre-de-donnees/Contact",
+        "wmo:dataPolicy": "core"
+    },
+    "links": [
+        {
+            "rel": "data",
+            "type": "collection",
+            "title": "Argo marine floats vertical profiles",
+            "href": "https://doi.org/10.17882/42182"
+        },
+        {
+            "rel": "items",
+            "channel": "origin/a/wis2/int-eumetsat/data/core/ocean/space-based-observations/meteosat-10/seviri",
+            "href": "mqtts://example.org",
+            "type": "application/geo+json",
+            "title": "Data notifications"
+        },
+        {
+            "rel": "search",
+            "type": "text/html",
+            "title": "Coriolis GDAC",
+            "href": "https://dataselection.euro-argo.eu/",
+            "distribution": {
+                "availableFormats": [
+                    {
+                        "name": "native",
+                        "description": "This is the Argo NetCDF format.",
+                        "numberOfFiles": "350 per day",
+                        "typicalFilesize": "680100",
+                        "typicalFilename": "BR4903659_010.nc",
+                        "iproductSamples": [
+                            "https://data-argo.ifremer.fr/dac/coriolis/4903659/profiles/BR4903659_010.nc"
+                        ],
+                        "documentation": [
+                            {
+                                "rel": "canonical",
+                                "title": "Argo NetCDF format and vocabularies",
+                                "type": "text/html",
+                                "href": "https://doi.org/10.13155/29825"
+                            },
+                            {
+                                "rel": "canonical",
+                                "title": "Argo data management documentation",
+                                "type": "text/html",
+                                "href": "http://www.argodatamgt.org/Documentation"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "rel": "service",
+            "href": "https://doi.org/10.17882/42182",
+            "type": "text/html",
+            "title": "MSG IR 10.8"
+        },
+        {
+            "rel": "license",
+            "href": "https://creativecommons.org/licenses/by/4.0/",
+            "type": "text/html",
+            "title": "CC-BY"
+        },
+        {
+            "rel": "help",
+            "type": "text/html",
+            "title": "Argo NetCDF format",
+            "href": "https://dx.doi.org/10.13155/29825"
+        }
+    ],
+    "linkTemplates": [
+        {
+            "rel": "items",
+            "type": "text/html",
+            "title": "Argo floats dashboard",
+            "uriTemplate": "https://fleetmonitoring.euro-argo.eu/",
+                "sampleRequest": "https://fleetmonitoring.euro-argo.eu/dashboard?Status=Active&Variable=OXYGEN"
+            }
+    ]
+}

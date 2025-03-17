@@ -1,0 +1,26 @@
+{
+    "id": "e686f5cf-bacf-4703-9f94-217e2b5d5ebb",
+    "conformsTo": [
+        "http://wis.wmo.int/spec/wnm/1/conf/core"
+    ],
+    "type": "Feature",
+    "geometry": null,
+    "properties": {
+        "data_id": "wis2/int-coriolis/data/core/ocean/underwaterMobile-observations/argo4nowcasting/4903659/cycle-10/BR4903659_010.nc",
+        "metadata_id": "urn:wmo:md:int:coriolis:EO:COR:DAT:MSG:ARGO",
+        "pubtime": "2024-06-19T17:12:48Z",
+        "integrity": {
+            "method": "sha512",
+            "value": "5a4cae86ee22d91f349ac51e24db08eba33f42950bdb295a78fdd00532bffc924bffa9e40b7d246e0b3629d4d7b2398e54710179e611d42aa9ef86ec0f2599e5"
+        },
+        "datetime": "2024-06-19T13:33:48Z"
+    },
+    "links": [
+        {
+            "href": "https://data-argo.ifremer.fr/dac/coriolis/4903659/profiles/BR4903659_010.nc",
+            "rel": "canonical",
+            "type": "application/octet-stream",
+            "length": 409575
+        }
+    ]
+}

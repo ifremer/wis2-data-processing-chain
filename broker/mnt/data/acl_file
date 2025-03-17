@@ -1,0 +1,6 @@
+user sys-monitor-rw
+topic readwrite monitoring/healthcheck
+user wis2-argo-rw
+topic readwrite origin/a/wis2/fr-ifremer-argo
+user wis2-argo-ro
+topic read origin/a/wis2/fr-ifremer-argo
