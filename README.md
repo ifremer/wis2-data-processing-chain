@@ -21,21 +21,19 @@ Le projet démarre trois services :
 1. **broker** : service Mosquitto qui fonctionne en tant que broker MQTT.
 2. **validate-metadata** : service Python qui valide un message de notification JSON de type **Core Metadata Profile** dans le répertoire `/data`.
 3. **publish-metadata** : service Python qui publie un un message de notification JSON de type **Core Metadata Profile** sur le topic `origin/a/wis2/fr-ifremer-argo` après validation.
-4. **validate-data** : service Python qui valide un message de notification JSON de type données dans le répertoire `/data`.
-5. **publish-metadata** : service Python qui publie un message JSON sur le topic `origin/a/wis2/fr-ifremer-argo` après validation.
-
-## Lancement du projet
-
-Pour lancer le projet, exécutez les commandes suivantes dans votre terminal :
-
-```bash
-docker compose up --build
-```
+4. **validate-data** : service Python qui valide un message de notification JSON de type data dans le répertoire `/data`.
+5. **publish-metadata** : service Python qui publie un message de notification JSON de type data sur le topic `origin/a/wis2/fr-ifremer-argo` après validation.
 
 ## Utilisation
 
 Pour valider et publier un message JSON sur un broker MQTT local, placez-le dans le répertoire `/data`, mettez à jour le fichier `compose.yml` pour pointer sur ce fichier et exécutez la commande suivante :
 
 ```bash
-docker compose up
+docker compose up --build
+```
+
+supression des conteneurs :
+
+```bash
+docker compose down
 ```
