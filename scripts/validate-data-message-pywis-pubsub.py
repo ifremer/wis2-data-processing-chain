@@ -1,49 +1,97 @@
 import json
 import argparse
+from pywis_pubsub.kpi import WNMKeyPerformanceIndicators
+from pywis_pubsub.ets import WNMTestSuite
 from pywis_pubsub.verification import verify_data
 
+
 def pretty_print_json(data, title="Résultat"):
-    """Affiche un dictionnaire JSON formaté proprement."""
-    print(f"\n=== {title} ===")
+    """
+    Affiche un dictionnaire JSON formaté de manière lisible.
+
+    :param data: Dictionnaire contenant les données JSON à afficher.
+    :param title: Titre affiché avant les données.
+    """
+    print(f"\n🔹 === {title} ===")
     print(json.dumps(data, indent=4, ensure_ascii=False))
 
 
-# def run_message_validate(data):
-#     """Exécute les tests ETS et affiche les résultats formatés."""
-#     ts = WNMTestSuite(data)
-#     try:
-#         results = ts.run_tests()
-#         pretty_print_json(results, "Résultats des tests ETS")
-#     except pywcmp.errors.TestSuiteError as err:
-#         print("\n=== Erreurs des tests ETS ===")
-#         print('\n'.join(err.errors))
+def run_ets_tests(data):
+    """
+    Exécute les tests ETS (Essential Test Suite) et affiche les résultats.
+
+    :param data: Données JSON à tester.
+    """
+    print("\n🚀 Exécution des tests ETS...")
+    ts = WNMTestSuite(data)
+    results = ts.run_tests()
+    pretty_print_json(results, "Résultats des tests ETS")
 
 
+def run_kpi_evaluation(data):
+    """
+    Évalue les Key Performance Indicators (KPI) sur les données JSON.
 
-def run_message_verify(data):
-    """Évalue les KPI et affiche le résumé formaté."""
-    verifies = verify_data(data)
-    if not verifies:
-        print('Verification failed')
+    :param data: Données JSON à analyser.
+    """
+    print("\n📊 Évaluation des KPI...")
+    kpis = WNMKeyPerformanceIndicators(data)
+    results = kpis.evaluate()
+    pretty_print_json(results["summary"], "Résumé des KPI")
+
+
+def run_message_verification(data):
+    """
+    Vérifie la conformité du message JSON avec les standards attendus.
+
+    :param data: Données JSON à vérifier.
+    """
+    print("\n🔍 Vérification de la conformité du message...")
+    result = verify_data(data)
+    if result:
+        print("✅ Message valide.")
     else:
-        print('Valid message')
+        print("❌ Échec de la vérification du message.")
+
+
+def load_json_file(file_path):
+    """
+    Charge un fichier JSON et gère les erreurs de lecture.
+
+    :param file_path: Chemin du fichier JSON.
+    :return: Dictionnaire JSON chargé ou None en cas d'erreur.
+    """
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        print(f"❌ Erreur : Fichier '{file_path}' introuvable.")
+    except json.JSONDecodeError as e:
+        print(f"❌ Erreur de format JSON : {e}")
+    return None
 
 
 def main():
-    """Point d'entrée principal du script."""
-    parser = argparse.ArgumentParser(description="Exécute les tests ETS et évalue les KPI d'un fichier JSON.")
+    """
+    Point d'entrée principal du script.
+    Parse les arguments de la ligne de commande et exécute les tests.
+    """
+    parser = argparse.ArgumentParser(
+        description="Valide un fichier JSON en exécutant les tests ETS, les KPI et la vérification du message.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument("file_path", help="Chemin du fichier JSON à tester")
     args = parser.parse_args()
 
-    try:
-        with open(args.file_path) as fh:
-            data = json.load(fh)
-    except (json.JSONDecodeError, FileNotFoundError) as e:
-        print(f"Erreur lors du chargement du fichier : {e}")
-        return
+    # Charger le fichier JSON
+    data = load_json_file(args.file_path)
+    if data is None:
+        return  # Quitte le script en cas d'erreur
 
-    # run_ets_tests(data)
-    run_message_verify(data)
+    # Exécuter les validations
+    run_ets_tests(data)
+    run_kpi_evaluation(data)
+    run_message_verification(data)
 
 
 if __name__ == "__main__":

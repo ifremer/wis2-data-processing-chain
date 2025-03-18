@@ -9,6 +9,7 @@ services:
       - ./broker/mnt/data:/mosquitto/data:rw
     ports: 
       - 8080:8080
+  # validation d'un fichier de métadonnées
   validate-metadata:
     build: ./scripts
     container_name: validate-metadata
@@ -16,6 +17,7 @@ services:
       - ./data:/data:ro
     command: >
       sh -c "python3 /app/validate-metadata-message-pywcmp.py /data/int-coriolis-argo-core.json"
+  # publication du contenu du fichier métadonnées
   publish-metadata:
     build: ./scripts
     container_name: publish-metadata
@@ -28,25 +30,26 @@ services:
         condition: service_started
       validate-metadata:
         condition: service_completed_successfully
-  # validate-data:
-  #   build: ./scripts
-  #   container_name: validate-data
-  #   environment:
-  #     PYWIS_PUBSUB_GDC_URL: https://api.weather.gc.ca/collections/wis2-discovery-metadata
-  #   volumes:
-  #     - ./data:/data:ro
-  #   command: >
-  #     sh -c "python3 /app/validate-metadata-message-pywis-pubsub.py /data/coriolis-msg-argo-core-notification.json"
-  # publish-data:
-  #   build: ./scripts
-  #   container_name: publish-data
-  #   volumes:
-  #     - ./data:/data:ro
-  #   command: >
-  #     sh -c "python3 /app/publish-data-message.py /data/coriolis-msg-argo-core-notification.json"
-  #   depends_on:
-  #     broker:
-  #       condition: service_started
-  #     validate-data:
-  #       condition: service_completed_successfully
-      
+  # validation d'un fichier de données
+  validate-data:
+    build: ./scripts
+    container_name: validate-data
+    environment:
+      PYWIS_PUBSUB_GDC_URL: https://api.weather.gc.ca/collections/wis2-discovery-metadata
+    volumes:
+      - ./data:/data:ro
+    command: >
+      sh -c "python3 /app/validate-data-message-pywis-pubsub.py /data/coriolis-msg-argo-core-notification.json"
+  # publication du contenu du fichier données
+  publish-data:
+    build: ./scripts
+    container_name: publish-data
+    volumes:
+      - ./data:/data:ro
+    command: >
+      sh -c "python3 /app/publish-notification-message.py origin/a/wis2/fr-ifremer-argo /data/coriolis-msg-argo-core-notification.json"
+    depends_on:
+      broker:
+        condition: service_started
+      validate-data:
+        condition: service_completed_successfully
