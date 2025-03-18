@@ -113,7 +113,7 @@
                         "id": "drifting-ocean-profilers"
                     }
                 ],
-                "scheme": "https://codes.wmo.int/wis/topic-hierarchy/earth-system-discipline"
+                "scheme": "https://codes.wmo.int/wis/topic-hierarchy/earth-system-discipline/ocean/surface-based-observations/drifting-ocean-profilers"
             },
             {
                 "concepts": [
@@ -141,8 +141,8 @@
         },
         {
             "rel": "items",
-            "channel": "origin/a/wis2/int-eumetsat/data/core/ocean/space-based-observations/meteosat-10/seviri",
-            "href": "mqtts://example.org",
+            "channel": "origin/a/wis2/fr-ifremer-argo/data/core",
+            "href": "wss://mosquitto.ifremer.fr:443",
             "type": "application/geo+json",
             "title": "Data notifications"
         },

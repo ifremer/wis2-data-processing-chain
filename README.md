@@ -21,7 +21,7 @@ Le projet démarre trois services :
 1. **broker** : service Mosquitto qui fonctionne en tant que broker MQTT.
 2. **validate-metadata** : service Python qui valide un message de notification JSON de type **Core Metadata Profile** dans le répertoire `/data`.
 3. **publish-metadata** : service Python qui publie un un message de notification JSON de type **Core Metadata Profile** sur le topic `origin/a/wis2/fr-ifremer-argo` après validation.
-4. **validate-data** : service Python qui valide un message de notification JSON de type **Core Metadata Profile** dans le répertoire `/data`.
+4. **validate-data** : service Python qui valide un message de notification JSON de type données dans le répertoire `/data`.
 5. **publish-metadata** : service Python qui publie un message JSON sur le topic `origin/a/wis2/fr-ifremer-argo` après validation.
 
 ## Lancement du projet
