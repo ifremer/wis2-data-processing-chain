@@ -24,7 +24,7 @@ PASSWORD = os.getenv("MQTT_PASSWORD")
 
 # Vérifier les identifiants MQTT
 if not USERNAME or not PASSWORD:
-    raise ValueError("🚨 Erreur : MQTT_USERNAME et MQTT_PASSWORD doivent être définis dans le fichier .env !")
+    raise ValueError("🚨 Erreur : MQTT_USERNAME et MQTT_PASSWORD doivent être définis comme variable d'environnement !")
 
 # Callback lors de la connexion au broker
 def on_connect(client, userdata, flags, rc):

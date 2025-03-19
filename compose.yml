@@ -25,6 +25,13 @@ services:
       - ./data:/data:ro
     command: >
       sh -c "python3 /app/publish-notification-message.py origin/a/wis2/fr-ifremer-argo /data/int-coriolis-argo-core.json"
+    environment:
+      MQTT_BROKER_DOMAIN: broker
+      MQTT_BROKER_PORT: 8080
+      MQTT_USERNAME: wis2-argo-rw
+      MQTT_PASSWORD: wis2-argo-rw
+      MQTT_BROKER_TOPIC_SUB: origin/a/wis2/fr-ifremer-argo
+      MQTT_BROKER_TOPIC_PUB: origin/a/wis2/fr-ifremer-argo
     depends_on:
       broker:
         condition: service_started
@@ -48,6 +55,13 @@ services:
       - ./data:/data:ro
     command: >
       sh -c "python3 /app/publish-notification-message.py origin/a/wis2/fr-ifremer-argo /data/coriolis-msg-argo-core-notification.json"
+    environment:
+      MQTT_BROKER_DOMAIN: broker
+      MQTT_BROKER_PORT: 8080
+      MQTT_USERNAME: wis2-argo-rw
+      MQTT_PASSWORD: wis2-argo-rw
+      MQTT_BROKER_TOPIC_SUB: origin/a/wis2/fr-ifremer-argo
+      MQTT_BROKER_TOPIC_PUB: origin/a/wis2/fr-ifremer-argo
     depends_on:
       broker:
         condition: service_started

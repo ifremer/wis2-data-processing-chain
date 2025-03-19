@@ -10,4 +10,3 @@ pywis-pubsub schema sync
 
 # copie des scripts
 COPY *.py /app
-COPY .env /app
