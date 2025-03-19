@@ -2,21 +2,20 @@
 
 Ce projet est une démonstration d'une chaine de traitement qui valide puis publie un message sur Le [WMO Information System](https://community.wmo.int/en/activity-areas/wis/wis2-implementation) (WIS 2.0) via un broker MQTT (mosquitto). Le code a été écrit en Python et utilise les bibliothèques suivantes :
 
-- `Paho` : Client broker MQTT
-- `pywis_pubsub` : Permet de publier / souscrire à des topics WIS2 et valider des message de notification.
-- `pywcmp` : Permet de valider des message de notification pour WMO WIS Core Metadata Profile (WCMP).
+- `Paho` : Client broker MQTT Python pour publier et souscire aux topics.
+- `pywis_pubsub` : Permet de valider des message de notification type data.
+- `pywcmp` : Permet de valider des message de notification type WMO WIS Core Metadata Profile (WCMP).
 
 ## Configuration
 
 Le projet nécessite les fichiers suivants :
 
 - `compose.yml` : fichier de configuration pour Docker Compose qui définit les services à exécuter.
-- `scripts/.env` : fichier de configuration pour les variables d'environnement des scripts Python.
 - `scripts/*.py` : scripts Python pour valider, publier, souscrire.
 
 ## Services
 
-Le projet démarre trois services :
+Le projet démarre 5 services :
 
 1. **broker** : service Mosquitto qui fonctionne en tant que broker MQTT.
 2. **validate-metadata** : service Python qui valide un message de notification JSON de type **Core Metadata Profile** dans le répertoire `/data`.
