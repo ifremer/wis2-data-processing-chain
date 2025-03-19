@@ -6,8 +6,8 @@
     "type": "Feature",
     "geometry": null,
     "properties": {
-        "data_id": "wis2/int-coriolis/data/core/ocean/underwaterMobile-observations/argo4nowcasting/4903659/cycle-10/BR4903659_010.nc",
-        "metadata_id": "urn:wmo:md:int:coriolis:EO:COR:DAT:MSG:ARGO",
+        "data_id": "wis2/fr-ifremer-argo/core/data/ocean/surface-based-observations/drifting-ocean-profilers/dac/coriolis/fr-ifremer-argo-core-metadata.json",
+        "metadata_id": "urn:wmo:md:fr-ifremer-argo:EO:COR:DAT:MSG:ARGO",
         "pubtime": "2024-06-19T17:12:48Z",
         "integrity": {
             "method": "sha512",
@@ -17,9 +17,9 @@
     },
     "links": [
         {
-            "href": "https://data-argo.ifremer.fr/dac/coriolis/4903659/profiles/BR4903659_010.nc",
+            "href": "https://data-argo.ifremer.fr/dac/coriolis/fr-ifremer-argo-core-metadata.json",
             "rel": "canonical",
-            "type": "application/octet-stream",
+            "type": "application/json",
             "length": 409575
         }
     ]

@@ -18,10 +18,12 @@ Le projet nécessite les fichiers suivants :
 Le projet démarre 5 services :
 
 1. **broker** : service Mosquitto qui fonctionne en tant que broker MQTT.
-2. **validate-metadata** : service Python qui valide un message de notification JSON de type **Core Metadata Profile** dans le répertoire `/data`.
-3. **publish-metadata** : service Python qui publie un un message de notification JSON de type **Core Metadata Profile** sur le topic `origin/a/wis2/fr-ifremer-argo` après validation.
-4. **validate-data** : service Python qui valide un message de notification JSON de type data dans le répertoire `/data`.
-5. **publish-metadata** : service Python qui publie un message de notification JSON de type data sur le topic `origin/a/wis2/fr-ifremer-argo` après validation.
+2. **validate-metadata** : service Python qui valide fichier JSON de type **Core Metadata Profile** dans le répertoire `/data`.
+3. **validate-metadata-message** : service Python qui valide un message de notification à envoyer pour le fichier de métadonnées.
+4. **validate-data-message** : service Python qui valide un message de notification pour un fichier de données dans le répertoire `/data`.
+
+5. **publish-metadata** : service Python qui publie un message de notification pour les fichier de métadonnées sur le topic `origin/a/wis2/fr-ifremer-argo/metadata` après validation.
+6. **publish-metadata** : service Python qui publie un message de notification pou run fichier de données sur le topic `origin/a/wis2/fr-ifremer-argo/core/data/ocean/surface-based-observations/drifting-ocean-profilers` après validation.
 
 ## Utilisation
 

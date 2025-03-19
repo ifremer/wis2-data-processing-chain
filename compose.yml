@@ -16,54 +16,67 @@ services:
     volumes:
       - ./data:/data:ro
     command: >
-      sh -c "python3 /app/validate-metadata-message-pywcmp.py /data/int-coriolis-argo-core.json"
-  # publication du contenu du fichier métadonnées
-  publish-metadata:
+      sh -c "python3 /app/validate-metadata-message-pywcmp.py /data/fr-ifremer-argo-core-metadata.json"
+  # validation message pour le fichier de métadonnées
+  validate-metadata-message:
     build: ./scripts
-    container_name: publish-metadata
-    volumes:
-      - ./data:/data:ro
-    command: >
-      sh -c "python3 /app/publish-notification-message.py origin/a/wis2/fr-ifremer-argo /data/int-coriolis-argo-core.json"
-    environment:
-      MQTT_BROKER_DOMAIN: broker
-      MQTT_BROKER_PORT: 8080
-      MQTT_USERNAME: wis2-argo-rw
-      MQTT_PASSWORD: wis2-argo-rw
-      MQTT_BROKER_TOPIC_SUB: origin/a/wis2/fr-ifremer-argo
-      MQTT_BROKER_TOPIC_PUB: origin/a/wis2/fr-ifremer-argo
-    depends_on:
-      broker:
-        condition: service_started
-      validate-metadata:
-        condition: service_completed_successfully
-  # validation d'un fichier de données
-  validate-data:
-    build: ./scripts
-    container_name: validate-data
+    container_name: validate-metadata-message
     environment:
       PYWIS_PUBSUB_GDC_URL: https://api.weather.gc.ca/collections/wis2-discovery-metadata
     volumes:
       - ./data:/data:ro
     command: >
-      sh -c "python3 /app/validate-data-message-pywis-pubsub.py /data/coriolis-msg-argo-core-notification.json"
-  # publication du contenu du fichier données
-  publish-data:
+      sh -c "python3 /app/validate-data-message-pywis-pubsub.py /data/coriolis-msg-argo-metadata-notification.json"
+    depends_on:
+      validate-metadata:
+        condition: service_completed_successfully
+  # validation message pour le fichier de données
+  validate-data-message:
     build: ./scripts
-    container_name: publish-data
+    container_name: validate-data-message
+    environment:
+      PYWIS_PUBSUB_GDC_URL: https://api.weather.gc.ca/collections/wis2-discovery-metadata
     volumes:
       - ./data:/data:ro
     command: >
-      sh -c "python3 /app/publish-notification-message.py origin/a/wis2/fr-ifremer-argo /data/coriolis-msg-argo-core-notification.json"
+      sh -c "python3 /app/validate-data-message-pywis-pubsub.py /data/coriolis-msg-argo-data-notification.json"
+  # publication du contenu du fichier métadonnées
+  publish-metadata-message:
+    build: ./scripts
+    container_name: publish-metadata-message
+    volumes:
+      - ./data:/data:ro
+    command: >
+      sh -c "python3 /app/publish-notification-message.py origin/a/wis2/fr-ifremer-argo /data/coriolis-msg-argo-metadata-notification.json"
     environment:
       MQTT_BROKER_DOMAIN: broker
       MQTT_BROKER_PORT: 8080
       MQTT_USERNAME: wis2-argo-rw
       MQTT_PASSWORD: wis2-argo-rw
-      MQTT_BROKER_TOPIC_SUB: origin/a/wis2/fr-ifremer-argo
-      MQTT_BROKER_TOPIC_PUB: origin/a/wis2/fr-ifremer-argo
+      MQTT_BROKER_TOPIC_SUB: origin/a/wis2/fr-ifremer-argo/metadata
+      MQTT_BROKER_TOPIC_PUB: origin/a/wis2/fr-ifremer-argo/metadata
     depends_on:
       broker:
         condition: service_started
-      validate-data:
+      validate-metadata-message:
+        condition: service_completed_successfully
+  # publication du contenu du fichier données
+  publish-data-message:
+    build: ./scripts
+    container_name: publish-data-message
+    volumes:
+      - ./data:/data:ro
+    command: >
+      sh -c "python3 /app/publish-notification-message.py origin/a/wis2/fr-ifremer-argo /data/coriolis-msg-argo-data-notification.json"
+    environment:
+      MQTT_BROKER_DOMAIN: broker
+      MQTT_BROKER_PORT: 8080
+      MQTT_USERNAME: wis2-argo-rw
+      MQTT_PASSWORD: wis2-argo-rw
+      MQTT_BROKER_TOPIC_SUB: origin/a/wis2/fr-ifremer-argo/core/data/ocean/surface-based-observations/drifting-ocean-profilers
+      MQTT_BROKER_TOPIC_PUB: origin/a/wis2/fr-ifremer-argo/core/data/ocean/surface-based-observations/drifting-ocean-profilers
+    depends_on:
+      broker:
+        condition: service_started
+      validate-data-message:
         condition: service_completed_successfully
