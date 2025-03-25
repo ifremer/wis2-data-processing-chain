@@ -1,0 +1,11 @@
+services:
+  # broker de message
+  broker:
+    image: eclipse-mosquitto:2.0.20
+    container_name: mosquitto
+    user: 1000:1000
+    volumes:
+      - ./broker/mnt/config:/mosquitto/config:ro
+      - ./broker/mnt/data:/mosquitto/data:rw
+    ports: 
+      - 8080:8080

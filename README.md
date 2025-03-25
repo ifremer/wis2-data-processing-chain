@@ -10,20 +10,30 @@ Ce projet est une démonstration d'une chaine de traitement qui valide puis publ
 
 Le projet nécessite les fichiers suivants :
 
-- `compose.yml` : fichier de configuration pour Docker Compose qui définit les services à exécuter.
-- `scripts/*.py` : scripts Python pour valider, publier, souscrire.
+- `compose.yml` : fichier de configuration Docker Compose définissant les services à éxécuter pour dérouler toute la chaine de publication d'un message de notification pour un fichier de données.
+- `compose.metadata.yml` : fichier de configuration Docker Compose définissant les services à éxécuter pour dérouler toute la chaine de publication d'un message de notification pour les fichier de métadonnées déclarant un dataset (**Core Metadata Profile**).
+- `scripts/*.py` : scripts Python pour créer, valider et publier un message de notification.
 
 ## Services
+
+### Data
+
+5 microservices :
+
+1. **broker** : service Mosquitto qui fonctionne en tant que broker MQTT.
+2. **create-data-message** : service Python qui créé un message de notification à partir d'un fichier de données dans le répertoire `/data`.
+3. **validate-data-message** : service Python qui valide un message de notification pour un fichier de données dans le répertoire `/data`.
+4. **publish-data-message** : service Python qui publie un message de notification pour un fichier de données sur le topic `origin/a/wis2/fr-ifremer-argo/core/data/ocean/surface-based-observations/drifting-ocean-profilers`.
+
+## Metadata
 
 Le projet démarre 5 services :
 
 1. **broker** : service Mosquitto qui fonctionne en tant que broker MQTT.
 2. **validate-metadata** : service Python qui valide fichier JSON de type **Core Metadata Profile** dans le répertoire `/data`.
-3. **validate-metadata-message** : service Python qui valide un message de notification à envoyer pour le fichier de métadonnées.
-4. **validate-data-message** : service Python qui valide un message de notification pour un fichier de données dans le répertoire `/data`.
-
+3. **create-metadata-message** : service Python qui valide fichier JSON de type **Core Metadata Profile** dans le répertoire `/data`.
+4. **validate-metadata-message** : service Python qui valide un message de notification à envoyer pour le fichier de métadonnées.
 5. **publish-metadata** : service Python qui publie un message de notification pour les fichier de métadonnées sur le topic `origin/a/wis2/fr-ifremer-argo/metadata` après validation.
-6. **publish-metadata** : service Python qui publie un message de notification pou run fichier de données sur le topic `origin/a/wis2/fr-ifremer-argo/core/data/ocean/surface-based-observations/drifting-ocean-profilers` après validation.
 
 ## Utilisation
 
@@ -38,3 +48,23 @@ supression des conteneurs :
 ```bash
 docker compose down
 ```
+
+## Notes
+
+### Messages
+
+Fichier de metadonnées à déposer sur le serveur apache contenant les données puis envoyer un message de notification sur : origin/a/wis2/fr-ifremer-argo/metadata
+
+Fichier de message de notification
+
+id : générer un uuid
+pubtime: date génération du fichier
+metadata_id : identifiant unique après urn:wmo:md:fr-ifremer-argo ?
+intégrity : hashage du fichier
+datetime : date de l'observation
+link :
+ type : specifique pour netcdf ? pour buffer :
+ taille : a setter proprement
+
+Connexion au broker de test par mail
+

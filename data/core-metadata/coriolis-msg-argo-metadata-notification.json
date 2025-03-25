@@ -7,7 +7,7 @@
     "geometry": null,
     "properties": {
         "data_id": "wis2/fr-ifremer-argo/core/data/ocean/surface-based-observations/drifting-ocean-profilers/dac/coriolis/fr-ifremer-argo-core-metadata.json",
-        "metadata_id": "urn:wmo:md:fr-ifremer-argo:EO:COR:DAT:MSG:ARGO",
+        "metadata_id": "urn:wmo:md:fr-ifremer-argo:cor:msg:argo",
         "pubtime": "2024-06-19T17:12:48Z",
         "integrity": {
             "method": "sha512",
