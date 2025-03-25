@@ -21,14 +21,14 @@ def get_file_path_id(file_path, depth):
     return os.path.join(*parts[-depth:])
 
 
-def generate_json_message(file_path, base_url, output_file=None):
+def generate_json_message(file_path, base_url, depth=2, output_file=None):
     """Génère un message JSON basé sur un fichier.
 
     - Si `output_file` est spécifié, écrit le JSON dans ce fichier.
     - Sinon, retourne une chaîne JSON.
     """
 
-    file_path_id = get_file_path_id(file_path, 3)
+    file_path_id = get_file_path_id(file_path, depth)
     file_name = os.path.basename(file_path)
     file_size = os.path.getsize(file_path)
     file_mod_time = datetime.fromtimestamp(
@@ -56,7 +56,7 @@ def generate_json_message(file_path, base_url, output_file=None):
         },
         "links": [
             {
-                "href": f"{file_path_id}/{file_name}",
+                "href": f"{base_url}/{file_path_id}/{file_name}",
                 "rel": "canonical",
                 "type": "application/bufr",
                 "length": file_size,

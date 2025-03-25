@@ -18,7 +18,7 @@ services:
     volumes:
       - ./data:/data:ro
     command: >
-      sh -c "python3 /app/create-notification-message.py /data/etc/bufr/IOPX01_LFVX_251403.BU"
+      sh -c "python3 /app/create-notification-message.py '/data/etc/bufr/IOPX01_LFVX_251403.BU'"
   # validation message pour le fichier de données
   validate-data-message:
     build: ./scripts
@@ -30,7 +30,7 @@ services:
     command: >
       sh -c "python3 /app/validate-data-message-pywis-pubsub.py /data/notification-message/IOPX01_LFVX_251403-msg-notification.json"
     depends_on:
-      validate-data-message:
+      create-data-message:
         condition: service_completed_successfully
 
   # publication du contenu du fichier données
