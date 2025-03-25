@@ -33,15 +33,19 @@ Le projet démarre 5 services :
 4. **validate-metadata-message** : service Python qui valide un message de notification à envoyer pour le fichier de métadonnées.
 5. **publish-metadata** : service Python qui publie un message de notification pour les fichier de métadonnées sur le topic `origin/a/wis2/fr-ifremer-argo/metadata` après validation. -->
 
-## Utilisation
+## Get Started
 
-Pour valider et publier un message JSON sur un broker MQTT local, placez-le dans le répertoire `/data`, mettez à jour le fichier `compose.yml` pour pointer sur ce fichier et exécutez la commande suivante :
+Afin de simuler la publication d'un message de notification sur un broker du WIS2 suivre la procédure suivante :
+
+1. Dépose le fichier de données dans le repertoire `/data`
+2. Référencez votre fichier de données d'entrée et le fichier JSON de sortie de type notification message dans le fichier `.env`
+3. Exécuter les commandes Docker ci dessous :
 
 ```bash
 docker compose up --build
 ```
 
-supression des conteneurs :
+Une fois le process terminé, supprimer des conteneurs :
 
 ```bash
 docker compose down

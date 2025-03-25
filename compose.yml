@@ -12,13 +12,14 @@ services:
   # creation d'un notification message pour un fichier de données exemple déposé dans le repertoire data du projet
   create-data-message:
     build: ./scripts
+    user: 1000:1000
     container_name: create-data-message
     environment:
       PYWIS_PUBSUB_GDC_URL: https://api.weather.gc.ca/collections/wis2-discovery-metadata
     volumes:
       - ./data:/data:ro
     command: >
-      sh -c "python3 /app/create-notification-message.py '/data/etc/bufr/IOPX01_LFVX_251403.BU'"
+      sh -c "python3 /app/create-notification-message.py $INPUT_DATA_FILE --output $OUTPUT_DATA_FILE"
   # validation message pour le fichier de données
   validate-data-message:
     build: ./scripts
@@ -28,7 +29,7 @@ services:
     volumes:
       - ./data:/data:ro
     command: >
-      sh -c "python3 /app/validate-data-message-pywis-pubsub.py /data/notification-message/IOPX01_LFVX_251403-msg-notification.json"
+      sh -c "python3 /app/validate-data-message-pywis-pubsub.py $OUTPUT_DATA_FILE"
     depends_on:
       create-data-message:
         condition: service_completed_successfully
@@ -40,7 +41,7 @@ services:
     volumes:
       - ./data:/data:ro
     command: >
-      sh -c "python3 /app/publish-notification-message.py origin/a/wis2/fr-ifremer-argo /data/notification-message/IOPX01_LFVX_251403-msg-notification.json"
+      sh -c "python3 /app/publish-notification-message.py $MQTT_BROKER_TOPIC_PUB $OUTPUT_DATA_FILE"
     environment:
       MQTT_BROKER_DOMAIN: broker
       MQTT_BROKER_PORT: 8080
