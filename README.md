@@ -17,15 +17,18 @@ Liste des outils et technologies utilisés :
   - `pywis_pubsub` : Permet de valider des message de notification type data.
   - `pywcmp` : Permet de valider des message de notification type WMO WIS Core Metadata Profile (WCMP).
 
-## Configuration
+## Oganisation
 
-Le projet nécessite les fichiers suivants :
+Le projet est organisé comme suis :
 
-- `compose.yml` : fichier de configuration Docker Compose définissant les services à éxécuter pour dérouler toute la chaine de publication d'un message de notification pour un fichier de données.
-- `compose.metadata.yml` : fichier de configuration Docker Compose définissant les services à éxécuter pour dérouler toute la chaine de publication d'un message de notification pour les fichier de métadonnées déclarant un dataset (**Core Metadata Profile**).
-- `scripts/*.py` : scripts Python pour créer, valider et publier un message de notification.
+- `broker/` : Répertoire contenant les données et configuration du boker MQTT
+- `scheduleur/` : Répertoire contenant les données et configuration de l'ordonnanceur Airflow
+- `data/` : Répertoire contenant des données pour les tests
+- `compose.yml` : Fichier de configuration Docker Compose définissant les services à éxécuter pour dérouler toute la chaine de publication d'un message de notification pour un fichier de données.
 
 ## Services
+
+TODO
 
 4 microservices :
 
