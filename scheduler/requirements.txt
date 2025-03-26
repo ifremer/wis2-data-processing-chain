@@ -1,0 +1,3 @@
+paho-mqtt==1.6.1
+pywcmp==0.11.0
+pywis-pubsub==0.8.0

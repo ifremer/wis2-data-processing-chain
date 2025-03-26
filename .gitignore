@@ -1,1 +1,3 @@
-broker/mnt/data/*.db
+broker/data/*.db
+scheduler/logs/*
+!.gitkeep

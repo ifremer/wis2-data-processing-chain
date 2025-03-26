@@ -1,10 +1,21 @@
 # Résumé
 
-Ce projet est une démonstration d'une chaine de traitement qui valide puis publie un message sur Le [WMO Information System](https://community.wmo.int/en/activity-areas/wis/wis2-implementation) (WIS 2.0) via un broker MQTT (mosquitto). Le code a été écrit en Python et utilise les bibliothèques suivantes :
+Ce projet illustre une chaîne de traitement permettant de créer, valider et publier un message sur le [WMO Information System](https://community.wmo.int/en/activity-areas/wis/wis2-implementation) (WIS 2.0).
 
-- `Paho` : Client broker MQTT Python pour publier et souscire aux topics.
-- `pywis_pubsub` : Permet de valider des message de notification type data.
-- `pywcmp` : Permet de valider des message de notification type WMO WIS Core Metadata Profile (WCMP).
+Le principe repose sur l'envoi d'un événement dès qu'un fichier de données est déposé dans un système de fichiers (développement hors périmètre du projet). Cet événement est transmis via un broker MQTT (Mosquitto) et capté par un ordonnanceur (Airflow), qui lance les traitements nécessaires pour générer et envoyer une notification au WMO Information System.
+
+Pour la démonstration, le cas d'usage Argo est utilisé, mais ce processus est conçu pour être adaptable à toute source de données, à condition de développer l'émission d'un événement lors de la création du fichier de données initial.
+
+## Outils / Technologies
+
+Liste des outils et technologies utilisés :
+
+- `Mosquitto` : Broker de message MQTT, utilisé pour faire trensiter le évènements / notifications
+- `Airflow` : Ordonnanceurs qui s'abonne au broker MQTT ordonne les traitements en fonction des évènements reçus.
+- `Python` : Les traitement dédiés au WIS2 sont écrit en python et utilise les librairies suivantes :
+  - `Paho` : Client broker MQTT Python pour publier et souscire aux topics.
+  - `pywis_pubsub` : Permet de valider des message de notification type data.
+  - `pywcmp` : Permet de valider des message de notification type WMO WIS Core Metadata Profile (WCMP).
 
 ## Configuration
 
