@@ -26,6 +26,16 @@ Le projet est organisé comme suis :
 - `data/` : Répertoire contenant des données pour les tests
 - `compose.yml` : Fichier de configuration Docker Compose définissant les services à éxécuter pour dérouler toute la chaine de publication d'un message de notification pour un fichier de données.
 
+## Configuration
+
+- `broker/config`
+- `broker/config`
+
+- `sceduler/config`
+- `sceduler/dag`
+- `sceduler/logs`
+- `sceduler/plugins`
+
 ## Services
 
 TODO
