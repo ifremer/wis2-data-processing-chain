@@ -1,6 +1,6 @@
 # Python
-# scheduler/dags/__pycache__
-# *.pyc
+scheduler/dags/__pycache__
+*.pyc
 
 # Local db
 broker/data/*.db
