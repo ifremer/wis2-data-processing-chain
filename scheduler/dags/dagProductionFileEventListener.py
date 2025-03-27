@@ -2,18 +2,23 @@ import os
 import json
 import logging
 from datetime import datetime
-from airflow import DAG
-from airflow.operators.python import PythonOperator
 import paho.mqtt.client as mqtt
+from airflow import DAG
+from airflow.models import Variable
+from airflow.operators.python import PythonOperator
 from airflow.api.common.trigger_dag import trigger_dag
 
-# Informations du broker MQTT
-MQTT_BROKER = "broker"
-MQTT_PORT = 8081
+# 📌 Récupérer la variable Airflow
+# Paramètres du broker
+MQTT_BROKER = Variable.get("MQTT_BROKER_DOMAIN", default_var="broker")
+MQTT_PORT = Variable.get("MQTT_BROKER_PORT", default_var=8081)
+SSL_ENABLED = Variable.get("MQTT_BORKER_SSL_ENABLED", default_var=False)
+
+# Récupération des identifiants
+MQTT_USERNAME = Variable.get("MQTT_ARGO_USERNAME", default_var="prod-files-ro")
+MQTT_PASSWORD = Variable.get("MQTT_ARGO_ASSWORD", default_var="prod-files-ro")
+
 MQTT_TOPIC = "production/files/coriolis/argo/bufr"
-MQTT_USERNAME = "prod-files-ro"
-MQTT_PASSWORD = "prod-files-ro"
-SSL_ENABLED = os.getenv("MQTT_BORKER_SSL_ENABLED", "false").lower() == "true"
 
 
 def listen_mqtt():

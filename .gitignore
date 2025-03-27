@@ -1,3 +1,11 @@
+# Python
+# scheduler/dags/__pycache__
+# *.pyc
+
+# Local db
 broker/data/*.db
+
+# Airflow logs
 scheduler/logs/*
+
 !.gitkeep
