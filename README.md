@@ -68,13 +68,13 @@ Le projet est organisé comme suis :
 
 ## Configuration
 
-- `broker/config` : 
-- `broker/data`
+- `broker/config` : contient le fichier de configuration mosquitto
+- `broker/data` : contient les configuration des utilisateur et des droits sur les topics mosquitto
 
-- `sceduler/config`
-- `sceduler/dag`
-- `sceduler/logs`
-- `sceduler/plugins`
+- `sceduler/config` : Configuration Airflow
+- `sceduler/dags` : Dags Airflow
+- `sceduler/logs` : Logs Airflow
+- `sceduler/plugins` : Plugins Airflow
 
 ## Services
 
@@ -106,7 +106,7 @@ Afin de simuler la publication d'un message de notification sur un broker du WIS
 3. Exécuter les commandes Docker ci dessous :
 
 ```bash
-docker compose up --build
+docker compose up
 ```
 
 Une fois le process terminé, supprimer des conteneurs :
