@@ -17,15 +17,6 @@ Liste des outils et technologies utilisés :
   - `pywis_pubsub` : Permet de valider des message de notification type data.
   - `pywcmp` : Permet de valider des message de notification type WMO WIS Core Metadata Profile (WCMP).
 
-## Oganisation
-
-Le projet est organisé comme suis :
-
-- `broker/` : Répertoire contenant les données et configuration du boker MQTT
-- `scheduleur/` : Répertoire contenant les données et configuration de l'ordonnanceur Airflow
-- `data/` : Répertoire contenant des données pour les tests
-- `compose.yml` : Fichier de configuration Docker Compose définissant les services à éxécuter pour dérouler toute la chaine de publication d'un message de notification pour un fichier de données.
-
 ## Architecture
 
 ```mermaid
@@ -44,7 +35,7 @@ subgraph internal_network["🌐 Ifremer network"]
 
   %% Début du style pour Airflow
   subgraph airflow_subgraph["🛠️ Airflow scheduler"]
-    mqtt_listener["🟩 WIS2 File Event Listener <br/>topic : diffusion/files/coriolis/argo/bufr"]:::listener
+    mqtt_listener["🟩 WIS2 File Event Listener <br/>topic : diffusion/files/coriolis/argo/#"]:::listener
     notification_message_process["🟦 WIS2 notification message process"]:::process
   end
   
@@ -66,10 +57,19 @@ class airflow_subgraph airflow;
 
 ```
 
+## Oganisation
+
+Le projet est organisé comme suis :
+
+- `broker/` : Répertoire contenant les données et configuration du boker MQTT
+- `scheduleur/` : Répertoire contenant les données et configuration de l'ordonnanceur Airflow
+- `data/` : Répertoire contenant des données pour les tests
+- `compose.yml` : Fichier de configuration Docker Compose définissant les services à éxécuter pour dérouler toute la chaine de publication d'un message de notification pour un fichier de données.
+
 ## Configuration
 
-- `broker/config`
-- `broker/config`
+- `broker/config` : 
+- `broker/data`
 
 - `sceduler/config`
 - `sceduler/dag`

@@ -18,7 +18,7 @@ SSL_ENABLED = Variable.get("MQTT_BORKER_SSL_ENABLED", default_var=False)
 MQTT_USERNAME = Variable.get("MQTT_ARGO_USERNAME", default_var="prod-files-ro")
 MQTT_PASSWORD = Variable.get("MQTT_ARGO_ASSWORD", default_var="prod-files-ro")
 
-MQTT_TOPIC = "production/files/coriolis/argo/bufr"
+MQTT_TOPIC = "diffusion/files/coriolis/argo/#"
 
 
 def listen_mqtt():

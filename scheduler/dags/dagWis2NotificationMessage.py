@@ -29,12 +29,14 @@ MQTT_PASSWORD = Variable.get("MQTT_ARGO_ASSWORD", default_var="wis2-argo-rw")
 
 
 def compute_sha512(file_path):
-    """Calcule le hash SHA-512 d'un fichier."""
-    sha512 = hashlib.sha512()
-    with open(file_path, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            sha512.update(chunk)
-    return sha512.hexdigest()
+    # TODO
+    # calcultate checksum's file with sha3-256
+    # hasher = hashlib.sha3_256()
+    # with open(path_file, "rb") as f:
+    #     for chunk in iter(lambda: f.read(4096), b""):
+    #         hasher.update(chunk)
+    # mh = multihash.encode(hasher.digest(), "sha3-256")
+
 
 
 def get_file_path_id(file_path, depth):

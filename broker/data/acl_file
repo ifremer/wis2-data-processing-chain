@@ -1,9 +1,9 @@
 user sys-monitor-rw
 topic readwrite monitoring/healthcheck
 user prod-files-rw
-topic readwrite production/files/#
+topic readwrite diffusion/files/#
 user prod-files-ro
-topic read production/files/#
+topic read diffusion/files/#
 user wis2-argo-rw
 topic readwrite origin/a/wis2/fr-ifremer-argo/#
 user wis2-argo-ro
