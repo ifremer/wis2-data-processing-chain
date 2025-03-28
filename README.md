@@ -34,27 +34,35 @@ graph TB;
 classDef process fill:#4C9AFF,stroke:#2A6FB5,stroke-width:2px,color:#fff,font-weight:bold;
 classDef broker fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000,font-weight:bold;
 classDef listener fill:#34D399,stroke:#0F9D58,stroke-width:2px,color:#fff,font-weight:bold;
+classDef airflow fill:#888f8a,stroke:#ffffff,stroke-width:2px,color:#000,font-weight:bold;
+
 
 %% Sous-graph pour représenter un réseau interne
 subgraph internal_network["🌐 Ifremer network"]
-    diffusion_process["🟦 Diffusion process"]:::process
-    broker_ifremer["🟨 Ifremer BROKER"]:::broker
+  diffusion_process["🟦 Diffusion process"]:::process
+  broker_ifremer["🟨 MQTT BROKER"]:::broker
+
+  %% Début du style pour Airflow
+  subgraph airflow_subgraph["🛠️ Airflow scheduler"]
     mqtt_listener["🟩 WIS2 File Event Listener <br/>topic : diffusion/files/coriolis/argo/bufr"]:::listener
     notification_message_process["🟦 WIS2 notification message process"]:::process
-
-    %% Connexions internes
-    diffusion_process -->|CloudEvent/STAC message| broker_ifremer
-    broker_ifremer -->|CloudEvent/STAC message| mqtt_listener
-    mqtt_listener --> notification_message_process
-    notification_message_process -->|WIS2 notification message| broker_ifremer
+  end
+  
+  %% Connexions internes
+  diffusion_process -->|CloudEvent/STAC message| broker_ifremer
+  broker_ifremer -->|CloudEvent/STAC message| mqtt_listener
+  mqtt_listener --> notification_message_process
+  notification_message_process -->|WIS2 notification message| broker_ifremer
 end
 
 %% Noeud externe placé en dehors du réseau interne
-broker_wis2["🟨 WIS2 Global Broker"]:::broker
+broker_wis2["🟨 WIS2 Global <br/> MQTT Broker"]:::broker
 
 %% Liaison entre le réseau interne et le broker externe
 broker_ifremer -.->|origin/a/wis2/fr-ifremer-argo/...| broker_wis2
 
+%% Application des styles après la déclaration du sous-graph
+class airflow_subgraph airflow;
 
 ```
 
