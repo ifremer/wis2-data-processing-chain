@@ -26,6 +26,38 @@ Le projet est organisé comme suis :
 - `data/` : Répertoire contenant des données pour les tests
 - `compose.yml` : Fichier de configuration Docker Compose définissant les services à éxécuter pour dérouler toute la chaine de publication d'un message de notification pour un fichier de données.
 
+## Architecture
+
+```mermaid
+graph TB;
+%% Définition des styles
+classDef process fill:#4C9AFF,stroke:#2A6FB5,stroke-width:2px,color:#fff,font-weight:bold;
+classDef broker fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000,font-weight:bold;
+classDef listener fill:#34D399,stroke:#0F9D58,stroke-width:2px,color:#fff,font-weight:bold;
+
+%% Sous-graph pour représenter un réseau interne
+subgraph internal_network["🌐 Ifremer network"]
+    diffusion_process["🟦 Diffusion process"]:::process
+    broker_ifremer["🟨 Ifremer BROKER"]:::broker
+    mqtt_listener["🟩 WIS2 File Event Listener <br/>topic : diffusion/files/coriolis/argo/bufr"]:::listener
+    notification_message_process["🟦 WIS2 notification message process"]:::process
+
+    %% Connexions internes
+    diffusion_process -->|CloudEvent/STAC message| broker_ifremer
+    broker_ifremer -->|CloudEvent/STAC message| mqtt_listener
+    mqtt_listener --> notification_message_process
+    notification_message_process -->|WIS2 notification message| broker_ifremer
+end
+
+%% Noeud externe placé en dehors du réseau interne
+broker_wis2["🟨 WIS2 Global Broker"]:::broker
+
+%% Liaison entre le réseau interne et le broker externe
+broker_ifremer -.->|origin/a/wis2/fr-ifremer-argo/...| broker_wis2
+
+
+```
+
 ## Configuration
 
 - `broker/config`

@@ -109,12 +109,14 @@ def generate_notification_message_from_bufr(
         return json.dumps(message, indent=4)
 
 
-def generate_notification_message_from_stac(stac_item, output_file=None):
+def generate_notification_message_from_stac(event_message, output_file=None):
     """Génère un message JSON basé sur un fichier.
 
     - Si `output_file` est spécifié, écrit le JSON dans ce fichier.
     - Sinon, retourne une chaîne JSON.
     """
+    # Get data from CloudEvent message
+    stac_item = event_message["data"]
 
     # récupération du premier asset
     first_asset = next(
@@ -139,8 +141,8 @@ def generate_notification_message_from_stac(stac_item, output_file=None):
             "pubtime": datetime.now(timezone.utc).isoformat(),
             "integrity": {
                 "method": "sha512",
-                "value": "1935bc352efe80f3264f16819c6bb41be2e1974a08205130b46a15df6e3a0c19ed46d8a3d22477f3acc9b238a63d43316c81add94c6689653c48c226d4beeb1e",
-            },  # TODO : obtenir le sha
+                "value": asset.get("file:checksum"),
+            },
             "datetime": stac_item["properties"]["datetime"],
         },
         "links": [
@@ -301,7 +303,7 @@ generate_notification_message_task = PythonOperator(
 
 validate_notification_message_task = BashOperator(
     task_id="validate_notification_message_task",
-    bash_command="pywis-pubsub message validate {{ ti.xcom_pull(task_ids='generate_notification_message_task', key='message_notification_path') }} --verbosity DEBUG",
+    bash_command="pywis-pubsub schema sync && pywis-pubsub message validate {{ ti.xcom_pull(task_ids='generate_notification_message_task', key='message_notification_path') }} --verbosity DEBUG",
     dag=process_message_dag,
 )
 

@@ -1,0 +1,146 @@
+{
+	"id": "IOPX01_LFVX_251403",
+	"source": "co05020402",
+	"specversion": "1.0",
+	"type": "fr.ifremer.file.diffusion",
+	"subject": "Diffusion Argo Netcdf",
+	"time": "2025-03-28T14:31:00Z",
+	"datacontenttype": "application/json",
+	"dataschema": "https://stac-extensions.github.io/file/v2.1.0/schema.json",
+	"data": {
+		"id": "IOPX01_LFVX_251403",
+		"bbox": [
+			21.059306666666668,
+			-36.29987333333333,
+			21.059306666666668,
+			-36.29987333333333
+		],
+		"type": "Feature",
+		"links": [
+			{
+				"rel": "collection",
+				"type": "application/json",
+				"href": "http://localhost:8082/collections/argo_profiles_test"
+			},
+			{
+				"rel": "parent",
+				"type": "application/json",
+				"href": "http://localhost:8082/collections/argo_profiles_test"
+			},
+			{
+				"rel": "root",
+				"type": "application/json",
+				"href": "http://localhost:8082/"
+			},
+			{
+				"rel": "self",
+				"type": "application/geo+json",
+				"href": "http://localhost:8082/collections/argo_profiles_test/items/Profile7901113_022A"
+			},
+			{
+				"rel": "related",
+				"href": "https://fleetmonitoring.euro-argo.eu/float/7901113",
+				"type": "text/html",
+				"title": "Fleet monitoring euro-argo website"
+			},
+			{
+				"rel": "cite-as",
+				"href": "https://doi.org/10.17882/42182"
+			},
+			{
+				"rel": "icon",
+				"href": "https://argo.ucsd.edu/wp-content/uploads/sites/361/2020/07/Argo_logo_tallspacer.png",
+				"type": "image/png",
+				"title": "Argo Icon"
+			}
+		],
+		"assets": {
+			"IOPX01_LFVX_251403.BU": {
+				"href": "https://data-argo.ifremer.fr/etc/bufr/202503/IOPX01_LFVX_251403.BU",
+				"type": "application/bufr",
+				"title": "Profile file D1901119_001.nc",
+				"roles": [
+					"data",
+					"metadata"
+				],
+				"alternate": {
+					"S3": {
+						"href": "s3://argo-gdac-sandbox/pub/etc/bufr/202503/IOPX01_LFVX_251403.BU",
+						"alternate:name": "S3"
+					},
+					"FTP": {
+						"href": "ftp://ftp.ifremer.fr/ifremer/argo/etc/bufr/202503/IOPX01_LFVX_251403.BU",
+						"alternate:name": "FTP"
+					},
+					"DATARMOR": {
+						"href": "file:///home/ref-argo/gdac/etc/bufr/202503/IOPX01_LFVX_251403.BU",
+						"alternate:name": "DATARMOR"
+					}
+				},
+				"file:size": 940,
+				"file:checksum": "1620f5e592ff51b46503d64cab008ef73270d8cac1c4b99a2559ff5ba7b5e1045781",
+				"alternate:name": "HTTPS"
+			}
+		},
+		"geometry": {
+			"type": "Point",
+			"coordinates": [
+				21.059306666666668,
+				-36.29987333333333
+			]
+		},
+		"collection": "argo_profiles_test",
+		"properties": {
+			"dac": "CORIOLIS",
+			"title": "Profile7901113_022A",
+			"themes": [
+				{
+					"scheme": "http://vocab.nerc.ac.uk/collection/R03/current/",
+					"concepts": [
+						{
+							"id": "PRES",
+							"url": "http://vocab.nerc.ac.uk/collection/R03/current/PRES"
+						},
+						{
+							"id": "TEMP",
+							"url": "http://vocab.nerc.ac.uk/collection/R03/current/TEMP"
+						},
+						{
+							"id": "PSAL",
+							"url": "http://vocab.nerc.ac.uk/collection/R03/current/PSAL"
+						}
+					]
+				}
+			],
+			"mission": "Argo BSH",
+			"sci:doi": "10.17882/42182",
+			"datetime": "2024-11-09T21:08:00.000000Z",
+			"platform": "7901113",
+			"providers": [
+				{
+					"name": "CORIOLIS",
+					"roles": [
+						"processor"
+					]
+				},
+				{
+					"url": "https://www.coriolis.eu.org/",
+					"name": "CORIOLIS",
+					"roles": [
+						"host"
+					]
+				}
+			],
+			"parameters": "PRES, TEMP, PSAL",
+			"description": "Argo float vertical profile",
+			"sci:citation": "Argo (2024). Argo float data and metadata from Global Data Assembly Centre (Argo GDAC). SEANOE. https://doi.org/10.17882/42182"
+		},
+		"stac_version": "1.1.0",
+		"stac_extensions": [
+			"https://stac-extensions.github.io/file/v2.1.0/schema.json",
+			"https://stac-extensions.github.io/alternate-assets/v1.2.0/schema.json",
+			"https://stac-extensions.github.io/scientific/v1.0.0/schema.json",
+			"https://stac-extensions.github.io/themes/v1.0.0/schema.json"
+		]
+	}
+}
