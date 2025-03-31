@@ -2,10 +2,10 @@
 	"id": "Profile7901113_022A",
 	"source": "co05XXXXX",
 	"specversion": "1.0",
-	"type": "fr.ifremer.diffusion.file.netcdf",
-	"subject": "Diffusion Argo Netcdf",
+	"type": "fr.ifremer.file.diffusion",
+	"subject": "diffusion/files/coriolis/argo/netcdf",
 	"time": "2025-03-28T14:31:00Z",
-	"datacontenttype": "application/json",
+	"datacontenttype": "application/json; charset=utf-8",
 	"dataschema": "https://github.com/radiantearth/stac-spec/tree/master/item-spec/json-schema",
 	"data": {
 		"id": "Profile7901113_022A",
@@ -26,6 +26,7 @@
 					"metadata"
 				],
 				"title": "Profile file R7901113_022.nc",
+				"created": "2024-11-10T00:35:00.00Z",
 				"file:size": 25620,
 				"file:checksum": "1620f5e592ff51b46503d64cab008ef73270d8cac1c4b99a2559ff5ba7b5e1045781",
 			}
@@ -64,7 +65,7 @@
 		},
 		"stac_version": "1.1.0",
 		"stac_extensions": [
-			"https://stac-extensions.github.io/file/v2.1.0/schema.json"
+			"https://stac-extensions.github.io/file/v2.1.0/schema.json",
 		]
 	}
 }

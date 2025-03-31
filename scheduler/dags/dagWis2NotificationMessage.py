@@ -70,7 +70,7 @@ def generate_notification_message_from_bufr(
     file_size = os.path.getsize(file_path)
     file_mod_time = datetime.fromtimestamp(
         os.path.getmtime(file_path), timezone.utc
-    ).isoformat()
+    ).isoformat() # date de l'observation
 
     sha512_hash = compute_sha512(file_path)
 
