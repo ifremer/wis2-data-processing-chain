@@ -78,58 +78,35 @@ Le projet est organisé comme suis :
 
 ## Services
 
-TODO
+### Metadata
 
-4 microservices :
+La gestion des métadonnées n'est pas incluse dans la démonstration, car elle ne nécessite qu'une seule exécution. Cependant, le principe reste le même. Un exemple de [fichier JSON **Core Metadata Profile**](/data/core-metadata/fr-ifremer-argo-core-metadata.json) est disponible dans le répertoire des données de test. Ce fichier doit être hébergé sur un serveur web et accessible librement sur Internet. À partir de ce Core Metadata Profile, il faut générer un message de notification WIS2 et le publier sur le broker global WIS2, sur le topic dédié. Par exemple, pour Argo :
 
-1. **broker** : service Mosquitto qui fonctionne en tant que broker MQTT.
-2. **create-data-message** : service Python qui créé un message de notification à partir d'un fichier de données dans le répertoire `/data`.
-3. **validate-data-message** : service Python qui valide un message de notification pour un fichier de données dans le répertoire `/data`.
-4. **publish-data-message** : service Python qui publie un message de notification pour un fichier de données sur le topic `origin/a/wis2/fr-ifremer-argo/core/data/ocean/surface-based-observations/drifting-ocean-profilers`.
+```bash
+mqttx pub -h localhost --debug -p 8081 -l ws -u wis2-argo-rw -P "wis2-argo-rw" --path / -t origin/a/wis2/fr-ifremer-argo/metadata -m "$(cat ./data/notification-message/core-metadata-msg-notification.json)"
+```
 
-<!-- ## Metadata
+### Data
 
-Le projet démarre 5 services :
+Microservices décrit dans les fichiers `compose.yml` :
 
-1. **broker** : service Mosquitto qui fonctionne en tant que broker MQTT.
-2. **validate-metadata** : service Python qui valide fichier JSON de type **Core Metadata Profile** dans le répertoire `/data`.
-3. **create-metadata-message** : service Python qui valide fichier JSON de type **Core Metadata Profile** dans le répertoire `/data`.
-4. **validate-metadata-message** : service Python qui valide un message de notification à envoyer pour le fichier de métadonnées.
-5. **publish-metadata** : service Python qui publie un message de notification pour les fichier de métadonnées sur le topic `origin/a/wis2/fr-ifremer-argo/metadata` après validation. -->
+1. `broker/compose.yml` : 1 microservice [Mosquitto](https://devops.ifremer.fr/development/tools/message/mosquitto), broker de messages qui implémente le protocole MQTT, permet de faire transiter les envènements (création d'un fichier de données) et les notifications (notification message WIS2).
+2. `scheduler/compose.yml` : 9 microservices permettant d'executer la solution d'ordonnancement Airflow locallement ([plus d'informations sur la documentation officielle](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html)). C'est avec Airflow que l'on va déclencher une chaine de traitement (création d'un notification message WIS2) à chaque fois qu'un évènement réceptionné (création d'un fichier de données).
+3. `event-message-diffusion` : 1 microservice simulant la création d'un évenement de diffusion nouveau fichier Argo.
+4. `notification-message-receipt` : 1 microservice simulant le global broker WIS2, il reçoit les notification messages.
 
 ## Get Started
 
-Afin de simuler la publication d'un message de notification sur un broker du WIS2 suivre la procédure suivante :
+Pour simuler la publication d'un message de notification sur un broker WIS2 à la réception d'un événement de création d'un fichier de données Argo, suivez la procédure suivante :
 
-1. Dépose le fichier de données dans le repertoire `/data`
-2. Référencez votre fichier de données d'entrée et le fichier JSON de sortie de type notification message dans le fichier `.env`
-3. Exécuter les commandes Docker ci dessous :
+- Démarrez les microservices Mosquitto et Airflow avec Docker :
 
 ```bash
 docker compose up
 ```
 
-Une fois le process terminé, supprimer des conteneurs :
+- Une fois le processus terminé, arrêtez et supprimez les conteneurs :
 
 ```bash
 docker compose down
 ```
-
-## Notes
-
-### Messages
-
-Fichier de metadonnées à déposer sur le serveur apache contenant les données puis envoyer un message de notification sur : origin/a/wis2/fr-ifremer-argo/metadata
-
-Fichier de message de notification
-
-id : générer un uuid
-pubtime: date génération du fichier
-metadata_id : identifiant unique après urn:wmo:md:fr-ifremer-argo ?
-intégrity : hashage du fichier
-datetime : date de l'observation
-link :
- type : specifique pour netcdf ? pour buffer :
- taille : a setter proprement
-
-Connexion au broker de test par mail

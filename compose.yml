@@ -2,3 +2,29 @@
 include:
   - broker/compose.yml # Mosquitto broker
   - scheduler/compose.yml # Airflow scheduler
+
+services:
+  # simulation d'un evenement de diffusion nouveau fichier Argo
+  event-message-diffusion:
+    image: emqx/mqttx-cli:v1.11.1
+    container_name: file-diffusion-event
+    user: 1000:1000
+    volumes:
+      - ./data/event-message:/data:ro
+    command: >
+      sh -c "mqttx pub -h broker --debug -p 8081 -l ws -u prod-files-rw -P \"prod-files-rw\" --path / -t diffusion/files/coriolis/argo/bufr -m \"$(cat /data/bufr-creation-cloudevent.json)\""
+    depends_on:
+      broker:
+        condition: service_started
+      airflow-webserver:
+        condition: service_healthy
+  # simulation du global broker WIS2 qui recoit un notification message
+  notification-message-receipt:
+    image: emqx/mqttx-cli:v1.11.1
+    container_name: notification-message-receipt
+    user: 1000:1000
+    command: >
+      sh -c "mqttx sub -h broker --debug -p 8081 -l ws -u wis2-argo-ro -P wis2-argo-ro --path / -t origin/a/wis2/fr-ifremer-argo/core/data/ocean/surface-based-observations/drifting-ocean-profilers"
+    depends_on:
+      broker:
+        condition: service_started
