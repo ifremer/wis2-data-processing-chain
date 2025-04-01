@@ -28,7 +28,7 @@
 				],
 				"created": "2025-03-25T15:03:00.00Z",
 				"file:size": 940,
-				"file:checksum": "1620f5e592ff51b46503d64cab008ef73270d8cac1c4b99a2559ff5ba7b5e1045781",
+				"file:checksum": "1620f2ba024b0986ab8e7d3ec275505c59070d453f4764e48ad9eaad9559bf76b906"
 			}
 		},
 		"geometry": {
@@ -38,7 +38,6 @@
 				-36.29987333333333
 			]
 		},
-		"collection": "argo_profiles",
 		"properties": {
 			"dac": "CORIOLIS",
 			"title": "Profile7901113_022A",
@@ -61,11 +60,11 @@
 				}
 			],
 			"parameters": "PRES, TEMP, PSAL",
-			"description": "Argo float vertical profile",
+			"description": "Argo float vertical profile"
 		},
 		"stac_version": "1.1.0",
 		"stac_extensions": [
-			"https://stac-extensions.github.io/file/v2.1.0/schema.json",
+			"https://stac-extensions.github.io/file/v2.1.0/schema.json"
 		]
 	}
 }

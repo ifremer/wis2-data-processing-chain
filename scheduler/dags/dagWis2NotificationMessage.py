@@ -2,11 +2,13 @@ import logging
 import os
 import json
 import uuid
-import hashlib
 import time
 from datetime import datetime, timezone
 from urllib.parse import urlparse
+import base64
+import multihash
 import paho.mqtt.client as mqtt
+import pystac
 from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
@@ -28,15 +30,15 @@ MQTT_PASSWORD = Variable.get("MQTT_ARGO_ASSWORD", default_var="wis2-argo-rw")
 ###############################################
 
 
-def compute_sha512(file_path):
-    # TODO
-    # calcultate checksum's file with sha3-256
-    # hasher = hashlib.sha3_256()
-    # with open(path_file, "rb") as f:
-    #     for chunk in iter(lambda: f.read(4096), b""):
-    #         hasher.update(chunk)
-    # mh = multihash.encode(hasher.digest(), "sha3-256")
-
+def compute_multihash_integrity(multihash_hex):
+    hash_bytes = bytes.fromhex(multihash_hex)  # 🔹 Convertir hex en bytes
+    decoded = multihash.decode(hash_bytes)
+    hash_method = multihash.constants.CODE_HASHES[decoded.code]
+    base64_code = base64.b64encode(decoded.digest).decode()
+    return {
+        "method": hash_method,
+        "value": base64_code,
+    }
 
 
 def get_file_path_id(file_path, depth):
@@ -56,106 +58,48 @@ def get_url_last_n_segments(url, n):
     return last_n  # Retourne uniquement la partie modifiée
 
 
-def generate_notification_message_from_bufr(
-    file_path, base_url, depth=2, output_file=None
-):
+def generate_notification_message_from_stac(stac_item_json, output_file=None):
     """Génère un message JSON basé sur un fichier.
 
     - Si `output_file` est spécifié, écrit le JSON dans ce fichier.
     - Sinon, retourne une chaîne JSON.
     """
-
-    file_path_id = get_file_path_id(file_path, depth)
-    file_name = os.path.basename(file_path)
-    file_size = os.path.getsize(file_path)
-    file_mod_time = datetime.fromtimestamp(
-        os.path.getmtime(file_path), timezone.utc
-    ).isoformat() # date de l'observation
-
-    sha512_hash = compute_sha512(file_path)
-
-    # Exemple d'ID et d'URN, à adapter selon tes besoins
-    data_id = f"wis2/fr-ifremer-argo/core/data/{file_path_id}"
     metadata_id = "urn:wmo:md:fr-ifremer-argo:cor:msg:argo"
+    stac_item = pystac.Item.from_dict(stac_item_json)
 
-    # Génération du message JSON
-    message = {
-        "id": str(uuid.uuid4()),
-        "conformsTo": ["http://wis.wmo.int/spec/wnm/1/conf/core"],
-        "type": "Feature",
-        "geometry": None,
-        "properties": {
-            "data_id": data_id,
-            "metadata_id": metadata_id,
-            "pubtime": datetime.now(timezone.utc).isoformat(),
-            "integrity": {"method": "sha512", "value": sha512_hash},
-            "datetime": file_mod_time,
-        },
-        "links": [
-            {
-                "href": f"{base_url}/{file_path_id}/{file_name}",
-                "rel": "canonical",
-                "type": "application/bufr",
-                "length": file_size,
-            }
-        ],
-    }
+    # récupération du premier asset ??
+    # Boucle sur les assets du STAC Item
+    for asset_key, asset in stac_item.assets.items():
+        logging.info(f"📂 Asset key: {asset_key}")  # Nom de l'asset
+        file_id = get_url_last_n_segments(asset.href, 3)
+        # Exemple d'ID et d'URN, à adapter selon tes besoins
+        data_id = f"wis2/fr-ifremer-argo/core/data/{file_id}"
+        wis2_integrity = compute_multihash_integrity(
+            asset.extra_fields.get("file:checksum")
+        )
 
-    if output_file:
-        # Écriture du JSON dans un fichier
-        with open(output_file, "w", encoding="utf-8") as f:
-            json.dump(message, f, indent=4)
-        return f"JSON sauvegardé dans {output_file}"
-    else:
-        # Retourner le JSON sous forme de chaîne
-        return json.dumps(message, indent=4)
-
-
-def generate_notification_message_from_stac(event_message, output_file=None):
-    """Génère un message JSON basé sur un fichier.
-
-    - Si `output_file` est spécifié, écrit le JSON dans ce fichier.
-    - Sinon, retourne une chaîne JSON.
-    """
-    # Get data from CloudEvent message
-    stac_item = event_message["data"]
-
-    # récupération du premier asset
-    first_asset = next(
-        iter(stac_item.get("assets", {})), None
-    )  # Prend la première clé des assets
-    asset = stac_item["assets"][first_asset]
-
-    file_id = get_url_last_n_segments(asset.get("href"), 3)
-    # Exemple d'ID et d'URN, à adapter selon tes besoins
-    data_id = f"wis2/fr-ifremer-argo/core/data/{file_id}"
-    metadata_id = "urn:wmo:md:fr-ifremer-argo:cor:msg:argo"
-
-    # Génération du message JSON
-    message = {
-        "id": str(uuid.uuid4()),
-        "conformsTo": ["http://wis.wmo.int/spec/wnm/1/conf/core"],
-        "type": "Feature",
-        "geometry": stac_item["geometry"],
-        "properties": {
-            "data_id": data_id,
-            "metadata_id": metadata_id,
-            "pubtime": datetime.now(timezone.utc).isoformat(),
-            "integrity": {
-                "method": "sha512",
-                "value": asset.get("file:checksum"),
+        # Génération du message JSON
+        message = {
+            "id": str(uuid.uuid4()),
+            "conformsTo": ["http://wis.wmo.int/spec/wnm/1/conf/core"],
+            "type": "Feature",
+            "geometry": stac_item.geometry,
+            "properties": {
+                "data_id": data_id,
+                "metadata_id": metadata_id,
+                "pubtime": datetime.now(timezone.utc).isoformat(),
+                "integrity": wis2_integrity,
+                "datetime": stac_item.properties.get("datetime", None),
             },
-            "datetime": stac_item["properties"]["datetime"],
-        },
-        "links": [
-            {
-                "href": asset.get("href"),
-                "rel": "canonical",
-                "type": asset.get("type"),
-                "length": asset.get("file:size"),
-            }
-        ],
-    }
+            "links": [
+                {
+                    "href": asset.href,
+                    "rel": "canonical",
+                    "type": asset.media_type,
+                    "length": asset.extra_fields.get("file:size", None),
+                }
+            ],
+        }
 
     if output_file:
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
@@ -168,27 +112,51 @@ def generate_notification_message_from_stac(event_message, output_file=None):
         return json.dumps(message, indent=4)
 
 
+def validate_stac_specification(**kwargs):
+    """Get file creation event and format a WIS2 notification message."""
+    cloudevents_message = kwargs["dag_run"].conf
+
+    # Get data from CloudEvent message
+    stac_item_json = cloudevents_message["data"]
+
+    try:
+        # Charger le JSON en dictionnaire
+        # stac_item_dict = json.loads(stac_item_json)
+        # Créer un STAC Item avec PySTAC
+        stac_item = pystac.Item.from_dict(stac_item_json)
+
+        # Valider l'Item STAC avec les schémas STAC officiels
+        stac_item.validate()
+
+        logging.info("✅ STAC Item est valide !")
+
+    except Exception as e:
+        logging.error(f"❌ Erreur de validation STAC : {e}")
+        return
+
+    kwargs["ti"].xcom_push(key="cloudevents_message", value=cloudevents_message)
+
+
 def generate_notification_message(**kwargs):
     """Get file creation event and format a WIS2 notification message."""
-    message = kwargs["dag_run"].conf
+    # Récupérer du message de notification validé
+    cloudevents_message = kwargs["ti"].xcom_pull(
+        task_ids="validate_event_message_data_task",
+        key="cloudevents_message",
+    )
 
-    # validate STAC format with pystac.validation.validate_core
-    # https://pystac.readthedocs.io/en/stable/api/validation.html
-    # TODO : validate format
-    if not message or not isinstance(message, dict) not in message:
-        logging.error("❌ Message MQTT invalide ou absent")
-        raise ValueError(
-            "Le format de l'évènement de production de fichier est invalide."
-        )  # 🚨 Lève une exception et stoppe la tâche
+    # Get data from CloudEvent message
+    stac_item_json = cloudevents_message["data"]
 
     # generation du message de notification
-    notification_message_temp_path = os.path.join(
-        "/tmp/wis2-publish-message-notification", "test_file.txt"
+    wis_notification_message_temp_path = os.path.join(
+        "/tmp/wis2-publish-message-notification", "notification-message.json"
     )
-    notification_message = generate_notification_message_from_stac(
-        message, notification_message_temp_path
+    wis_notification_message = generate_notification_message_from_stac(
+        stac_item_json, wis_notification_message_temp_path
     )
-    logging.info(f"Message de notification WIS2 : ${notification_message}")
+
+    logging.info(f"Message de notification WIS2 : ${wis_notification_message}")
 
     # Ecriture du message dans un fichier
     BASE_PATH = "/tmp/wis2-publish-message-notification"
@@ -196,11 +164,11 @@ def generate_notification_message(**kwargs):
 
     # 📌 Stocker le chemin du fichier dans XCom
     kwargs["ti"].xcom_push(
-        key="message_notification_path", value=notification_message_temp_path
+        key="message_notification_path", value=wis_notification_message_temp_path
     )
     # Stocker la donnée dans XCom
-    kwargs["ti"].xcom_push(key="message_notification", value=notification_message)
-    logging.info(f"✅ Fichier généré : {notification_message_temp_path}")
+    kwargs["ti"].xcom_push(key="message_notification", value=wis_notification_message)
+    logging.info(f"✅ Fichier généré : {wis_notification_message_temp_path}")
 
 
 ###############################################
@@ -234,9 +202,11 @@ def pub_notification_message(**kwargs):
     # )
 
     if notification_message is None:
-        logging.error("❌ Erreur : Le message WIS2 est manquant !")
+        logging.error(
+            "❌ Erreur : Le message envoyer au broker MQTT est invalide ou absent."
+        )
         raise ValueError(
-            "Le message de notification WIS2 est invalide ou absent."
+            "Le message envoyer au broker MQTT est invalide ou absent."
         )  # 🚨 Lève une exception et stoppe la tâche
 
     # Création du client MQTT avec WebSockets
@@ -287,12 +257,20 @@ process_message_dag = DAG(
         "email": ["lbruvryl@ifremer.fr"],
         "email_on_failure": False,
         "email_on_retry": False,
-        "start_date": datetime(2025, 3, 24),
         "retries": 3,
     },
     description="Envoi de messages de notifications MQTT pour WMO Information System (WIS2).",
     schedule_interval=None,  # Permet au DAG de tourner en continu
     catchup=False,
+    is_paused_upon_creation=False,  # Active le DAG au lancement d'Airflow
+)
+
+# Operator dedicated to validate STAC specification from event
+validate_event_message_data_task = PythonOperator(
+    task_id="validate_event_message_data_task",
+    python_callable=validate_stac_specification,
+    provide_context=True,
+    dag=process_message_dag,
 )
 
 # Operator dedicated to create WIS2 notification file
@@ -336,10 +314,10 @@ pub_notification_message_task = PythonOperator(
 )
 
 (
-    # create_notification_message_task
-    generate_notification_message_task
+    validate_event_message_data_task
+    >> generate_notification_message_task
     >> validate_notification_message_task
-    # >> validate_notification_message_data_task
+    >> validate_notification_message_data_task
     >> validate_wnm_data_task
     >> validate_key_performance_indicators_task
     >> pub_notification_message_task

@@ -28,7 +28,7 @@
 				"title": "Profile file R7901113_022.nc",
 				"created": "2024-11-10T00:35:00.00Z",
 				"file:size": 25620,
-				"file:checksum": "1620f5e592ff51b46503d64cab008ef73270d8cac1c4b99a2559ff5ba7b5e1045781",
+				"file:checksum": "1620f5e592ff51b46503d64cab008ef73270d8cac1c4b99a2559ff5ba7b5e1045781"
 			}
 		},
 		"geometry": {
@@ -61,11 +61,11 @@
 				}
 			],
 			"parameters": "PRES, TEMP, PSAL",
-			"description": "Argo float vertical profile",
+			"description": "Argo float vertical profile"
 		},
 		"stac_version": "1.1.0",
 		"stac_extensions": [
-			"https://stac-extensions.github.io/file/v2.1.0/schema.json",
+			"https://stac-extensions.github.io/file/v2.1.0/schema.json"
 		]
 	}
 }

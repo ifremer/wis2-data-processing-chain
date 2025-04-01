@@ -1,8 +1,9 @@
-import os
 import json
 import logging
 from datetime import datetime
 import paho.mqtt.client as mqtt
+from cloudevents.http import from_json
+from cloudevents.conversion import to_structured
 from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
@@ -35,18 +36,27 @@ def listen_mqtt():
         """Callback exécuté lorsqu'un message MQTT est reçu."""
         try:
             payload = message.payload.decode("utf-8")
-            data = json.loads(payload)
-            logging.info(f"📩 Message reçu : {data}")
+
+            # Validation du format CloudEvents
+            event = from_json(payload)
+
+            # Afficher les informations de l'événement
+            logging.info(f"✅ CloudEvent valide, {event['type']} de {event['source']}")
+
+            headers, body = to_structured(event)
+
+            # Afficher les informations de l'événement
+            logging.info(f"📩 Message reçu : {body}, {headers}")
 
             # Déclenche `process_message_dag` avec les données du message
             trigger_dag(
                 dag_id="wis2-publish-message-notification",
-                conf=data,  # Envoie le message en paramètre
+                conf=body,  # Envoie le message en paramètre
                 replace_microseconds=False,
             )
 
-        except json.JSONDecodeError:
-            logging.error("❌ Erreur de parsing du message MQTT")
+        except json.JSONDecodeError as error:
+            logging.error(f"❌ Erreur de parsing du message MQTT : + {error}")
 
     # Création du client MQTT
     client = mqtt.Client(transport="websockets")
@@ -75,8 +85,10 @@ mqtt_listener_dag = DAG(
         "retries": 3,
     },
     description="Écoute les messages MQTT correspondant aux evènements de production de fichiers, et déclenche un DAG pour chaque message reçu.",
-    schedule_interval=None,  # Permet au DAG de tourner en continu
+    start_date=datetime(2025, 3, 24),
+    schedule_interval="@once",
     catchup=False,
+    is_paused_upon_creation=False,  # Active le DAG au lancement d'Airflow
 )
 
 
