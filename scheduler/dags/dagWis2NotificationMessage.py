@@ -126,7 +126,7 @@ def generate_notification_message(**kwargs):
         stac_item_json, notification_file_path
     )
 
-    logger.info(f"📩 Notification message generated")
+    logger.info("📩 Notification message generated")
     # Store message in XCom
     kwargs["ti"].xcom_push(
         key="message_notification",
