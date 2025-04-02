@@ -4,8 +4,8 @@ include:
   - scheduler/compose.yml # Airflow scheduler
 
 services:
-  # simulation d'un evenement de diffusion nouveau fichier Argo
-  event-message-diffusion:
+  # Simulate Argo diffusion file BUFR event
+  argo-event-diffusion:
     image: emqx/mqttx-cli:v1.11.1
     container_name: file-diffusion-event
     user: 1000:1000
@@ -18,8 +18,8 @@ services:
         condition: service_started
       airflow-webserver:
         condition: service_healthy
-  # simulation du global broker WIS2 qui recoit un notification message
-  notification-message-receipt:
+  # Simulate WIS2 Global broker argo core subscription
+  wis2-argo-subscription:
     image: emqx/mqttx-cli:v1.11.1
     container_name: notification-message-receipt
     user: 1000:1000
