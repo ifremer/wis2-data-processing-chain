@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime
+
 import paho.mqtt.client as mqtt
 from cloudevents.http import from_json
 from cloudevents.conversion import to_structured
@@ -9,56 +10,58 @@ from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 from airflow.api.common.trigger_dag import trigger_dag
 
-# 📌 Récupérer la variable Airflow
-# Paramètres du broker
+# Retrieve MQTT broker configuration from Airflow variables
 MQTT_BROKER = Variable.get("MQTT_BROKER_DOMAIN", default_var="broker")
-MQTT_PORT = Variable.get("MQTT_BROKER_PORT", default_var=8081)
-SSL_ENABLED = Variable.get("MQTT_BORKER_SSL_ENABLED", default_var=False)
+MQTT_PORT = int(Variable.get("MQTT_BROKER_PORT", default_var=8081))
+SSL_ENABLED = Variable.get("MQTT_BROKER_SSL_ENABLED", default_var=False) == "true"
 
-# Récupération des identifiants
+# Retrieve MQTT authentication credentials
 MQTT_USERNAME = Variable.get("MQTT_ARGO_USERNAME", default_var="prod-files-ro")
-MQTT_PASSWORD = Variable.get("MQTT_ARGO_ASSWORD", default_var="prod-files-ro")
+MQTT_PASSWORD = Variable.get("MQTT_ARGO_PASSWORD", default_var="prod-files-ro")
 
+# MQTT topic to subscribe to
 MQTT_TOPIC = "diffusion/files/coriolis/argo/#"
 
+logger = logging.getLogger(__name__)
 
 def listen_mqtt():
-    """Écoute MQTT en continu et déclenche `process_message_dag` pour chaque message reçu."""
+    """
+    Continuously listens to MQTT messages and triggers the `process_message_dag` for each received message.
+    """
 
     def on_connect(client, userdata, flags, rc):
         if rc == 0:
-            logging.info("✅ Connexion réussie au broker MQTT")
+            logger.info("✅ Successfully connected to the MQTT broker")
             client.subscribe(MQTT_TOPIC)
         else:
-            logging.error(f"❌ Échec de connexion, code {rc}")
+            logger.error(f"❌ Connection failed with code {rc}")
 
     def on_message(client, userdata, message):
-        """Callback exécuté lorsqu'un message MQTT est reçu."""
+        """Callback function triggered when an MQTT message is received."""
         try:
             payload = message.payload.decode("utf-8")
-
-            # Validation du format CloudEvents
-            event = from_json(payload)
-
-            # Afficher les informations de l'événement
-            logging.info(f"✅ CloudEvent valide, {event['type']} de {event['source']}")
-
+            event = from_json(payload)  # Validate as a CloudEvent
             headers, body = to_structured(event)
 
-            # Afficher les informations de l'événement
-            logging.info(f"📩 Message reçu : {body}, {headers}")
-
-            # Déclenche `process_message_dag` avec les données du message
-            trigger_dag(
-                dag_id="wis2-publish-message-notification",
-                conf=body,  # Envoie le message en paramètre
-                replace_microseconds=False,
+            logger.info(
+                f"✅ Valid CloudEvent received: {event['type']} from {event['source']}"
             )
+            logger.info(f"📩 Message payload: {body}, Headers: {headers}")
 
+            # Trigger the processing DAG with the received event data
+            try:
+                trigger_dag(
+                    dag_id="wis2-publish-message-notification",
+                    conf=body,
+                    replace_microseconds=False,
+                )
+                logger.info("🚀 DAG successfully triggered!")
+            except Exception as e:
+                logger.error(f"❌ Failed to trigger DAG: {e}")
         except json.JSONDecodeError as error:
-            logging.error(f"❌ Erreur de parsing du message MQTT : + {error}")
+            logger.error(f"❌ Failed to parse MQTT message: {error}")
 
-    # Création du client MQTT
+    # Initialize MQTT client
     client = mqtt.Client(transport="websockets")
     if SSL_ENABLED:
         client.tls_set()
@@ -67,11 +70,12 @@ def listen_mqtt():
     client.on_connect = on_connect
     client.on_message = on_message
 
+    # Connect to the broker and start listening
     client.connect(MQTT_BROKER, MQTT_PORT, 60)
-    client.loop_forever()  # Écoute en continu
+    client.loop_forever()
 
 
-# Définition du DAG principal (écoute MQTT)
+# Define the main DAG for MQTT listening
 mqtt_listener_dag = DAG(
     dag_id="wis2-listener-production-file",
     dag_display_name="📂 WIS2 - Ecoute production d'un fichier de données",
@@ -88,13 +92,13 @@ mqtt_listener_dag = DAG(
     start_date=datetime(2025, 3, 24),
     schedule_interval="@once",
     catchup=False,
-    is_paused_upon_creation=False,  # Active le DAG au lancement d'Airflow
+    is_paused_upon_creation=False,  # Ensure the DAG is active on Airflow startup
 )
 
-
-# Opérateur Python pour écouter MQTT
+# Define the PythonOperator to start MQTT listener
 mqtt_listener = PythonOperator(
     task_id="mqtt_listener",
     python_callable=listen_mqtt,
+    provide_context=True,
     dag=mqtt_listener_dag,
 )
