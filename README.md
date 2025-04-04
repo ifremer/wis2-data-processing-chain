@@ -19,40 +19,44 @@ List of tools and technologies used:
 
 ## Architecture
 
-```mermaid
-graph TB;
-%% Style definitions
-classDef process fill:#4C9AFF,stroke:#2A6FB5,stroke-width:2px,color:#fff,font-weight:bold;
-classDef broker fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000,font-weight:bold;
+```{mermaid}
+flowchart TB;
+%% Styles améliorés
+classDef filesystem fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000,font-weight:bold;
+classDef process fill:#0A89B0,stroke:#08637F,stroke-width:2px,color:#fff,font-weight:bold;
+classDef broker fill:#007acc,stroke:#005f99,stroke-width:2px,color:#fff,font-weight:bold;
 classDef listener fill:#34D399,stroke:#0F9D58,stroke-width:2px,color:#fff,font-weight:bold;
 classDef airflow fill:#888f8a,stroke:#ffffff,stroke-width:2px,color:#000,font-weight:bold;
 
-%% Internal network representation
-subgraph internal_network["🌐 Ifremer network"]
-  diffusion_process["🟦 Diffusion process"]:::process
-  broker_ifremer["🟨 MQTT BROKER"]:::broker
+%% Réseau interne - Ifremer WIS2 Node
+subgraph internal_network["🔗 Ifremer WIS2 Node"]
+  broker_ifremer["📨 Ifremer Broker"]:::broker
 
-  %% Airflow subsystem
-  subgraph airflow_subgraph["🛠️ Airflow scheduler"]
-    mqtt_listener["🟩 WIS2 File Event Listener <br/>topic : diffusion/files/coriolis/argo/#"]:::listener
-    notification_message_process["🟦 WIS2 notification message process"]:::process
+  %% Serveur Web sécurisé
+  subgraph https_server_subgraph["🌐 HTTPS Server"]
+    data_filesystem["🗂️ Argo Data Files"]:::filesystem
+    diffusion_process["⚙️ Argo Event Processor"]:::process
   end
 
-  %% Internal connections
+  %% Planification des tâches - Airflow
+  subgraph airflow_subgraph["🗓️ Airflow Scheduler"]
+    mqtt_listener["🎧 Event Listener"]:::listener
+    notification_message_process["📦 WIS2 Message Generator"]:::process
+  end
+
+  %% Connexions internes
+  data_filesystem -->|new file| diffusion_process
   diffusion_process -->|CloudEvent/STAC message| broker_ifremer
-  broker_ifremer -->|CloudEvent/STAC message| mqtt_listener
-  mqtt_listener --> notification_message_process
-  notification_message_process -->|WIS2 notification message| broker_ifremer
+  broker_ifremer -->|CloudEvent/STAC| mqtt_listener
+  mqtt_listener -->|Trigger Notification| notification_message_process
+  notification_message_process -->|WIS2 Notification| broker_ifremer
 end
 
-%% External node outside internal network
-broker_wis2["🟨 WIS2 Global <br/> MQTT Broker"]:::broker
+%% Noeuds externes
+broker_wis2["📨 WIS2 Global Broker"]:::broker
 
-%% Connection between internal network and external broker
-broker_ifremer -.->|origin/a/wis2/fr-ifremer-argo/...| broker_wis2
-
-%% Apply styles after subgraph declaration
-class airflow_subgraph airflow;
+%% Connexions externes
+broker_wis2 -->|origin/a/wis2/fr-ifremer-argo/...| broker_ifremer
 
 ```
 
