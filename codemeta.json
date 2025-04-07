@@ -1,0 +1,73 @@
+{
+    "@context": [
+        "https://w3id.org/codemeta/3.0",
+        "https://schema.org"
+    ],
+    "type": "SoftwareSourceCode",
+    "applicationCategory": "Data processing",
+    "author": [
+        {
+            "id": "https://orcid.org/0000-0002-7768-1671",
+            "type": "Person",
+            "affiliation": {
+                "type": "Organization",
+                "name": "Ifremer"
+            },
+            "email": "leo.bruvry.lagadec@ifremer.fr",
+            "familyName": "Bruvry-Lagadec",
+            "givenName": "Leo"
+        }
+    ],
+    "codeRepository": "https://github.com/ifremer/wis2-data-processing-chain/",
+    "dateCreated": "2025-04-01",
+    "dateModified": "2025-04-07",
+    "datePublished": "2025-04-07",
+    "description": "The WIS2 Data Processing Chain project by Ifremer demonstrates an efficient workflow for creating, validating, and publishing notifications to the World Meteorological Organization's Information System (WIS 2.0). Designed with adaptability in mind, this processing chain can accommodate various data sources, initiating its sequence upon the detection of a new data file.​",
+    "downloadUrl": "https://github.com/ifremer/wis2-data-processing-chain/",
+    "identifier": "https://github.com/ifremer/wis2-data-processing-chain/",
+    "isPartOf": "https://community.wmo.int/en/activity-areas/wis/wis2-implementation",
+    "keywords": [
+        "WIS 2.0",
+        "Data Processing Chain",
+        "MQTT Broker",
+        "Mosquitto",
+        "Airflow Scheduler",
+        "CloudEvents",
+        "STAC",
+        "Argo Data",
+        "Environmental Data Sharing",
+        "Open Standards",
+        "Open Source",
+        "Data Notification System",
+        "Real-time Data Processing",
+        "Scalable Architecture",
+        "Metadata Management",
+        "Geospatial Data",
+        "Event-Driven Architecture",
+        "Data Dissemination",
+        "Organisation météorologique mondial",
+        "WMO Information System",
+        "Data Integration",
+        "Cloud-Ready Solution"
+    ],
+    "license": "https://spdx.org/licenses/LGPL-3.0",
+    "name": "WIS2 node data processing chain",
+    "operatingSystem": "Linux",
+    "programmingLanguage": [
+        "Python"
+    ],
+    "relatedLink": [
+        "https://community.wmo.int/en/activity-areas/wis/wis2-implementation",
+        "https://wmo-im.github.io/wis2-guide/",
+        "https://github.com/wmo-im/wis2-notification-message"
+    ],
+    "releaseNotes": "## 0.0.1 (2025-04-07)\n\n### added (1 changes)\n\n- Prototype of Argo WIS2 node\n\n",
+    "version": "0.0.1",
+    "developmentStatus": "active",
+    "funding": {
+        "type": "Organization",
+        "name": "Ifremer",
+        "identifier": "https://ror.org/044jxhp58"
+    },
+    "issueTracker": "https://github.com/ifremer/wis2-data-processing-chain/issues"
+}

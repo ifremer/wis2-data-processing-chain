@@ -1,0 +1,59 @@
+cff-version: 1.2.0
+title: In situ data charts component
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Leo
+    family-names: Bruvry-Lagadec
+    email: leo.bruvry.lagadec@ifremer.fr
+    affiliation: Ifremer
+    orcid: 'https://orcid.org/0000-0002-7768-1671'
+  - name: Ifremer
+    address: 1625 route de Sainte-Anne
+    city: Plouzané
+    country: FR
+    post-code: '29200'
+    region: Bretagne
+repository-code: >-
+  https://github.com/ifremer/wis2-data-processing-chain/
+url: >-
+  https://github.com/ifremer/wis2-data-processing-chain/
+repository-artifact: >-
+  https://github.com/ifremer/wis2-data-processing-chain/
+abstract: >-
+  The WIS2 Data Processing Chain project by Ifremer demonstrates an efficient 
+  workflow for creating, validating, and publishing notifications to the World 
+  Meteorological Organization's Information System (WIS 2.0). Designed with 
+  adaptability in mind, this processing chain can accommodate various data sources, 
+  initiating its sequence upon the detection of a new data file.
+keywords:
+  - WIS 2.0
+  - Data Processing Chain
+  - MQTT Broker
+  - Mosquitto
+  - Airflow Scheduler
+  - CloudEvents
+  - STAC
+  - Argo
+  - Argo Data
+  - Environmental Data Sharing
+  - Open Standards
+  - Open Source
+  - Data Notification System
+  - Real-time Data Processing
+  - Scalable Architecture
+  - Metadata Management
+  - Geospatial Data
+  - Event-Driven Architecture
+  - Data Dissemination
+  - Organisation météorologique mondial
+  - WMO Information System
+  - Data Integration
+  - Cloud-Ready Solution
+  - Ifremer
+license: LGPL-3.0
+commit: Last release
+version: 0.0.1
+date-released: '2025-04-207'
