@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import paho.mqtt.client as mqtt
 from cloudevents.http import from_json
@@ -24,6 +24,7 @@ MQTT_TOPIC = "diffusion/files/coriolis/argo/#"
 
 logger = logging.getLogger(__name__)
 
+
 def listen_mqtt():
     """
     Continuously listens to MQTT messages and triggers the `process_message_dag` for each received message.
@@ -32,9 +33,13 @@ def listen_mqtt():
     def on_connect(client, userdata, flags, rc):
         if rc == 0:
             logger.info("✅ Successfully connected to the MQTT broker")
-            client.subscribe(MQTT_TOPIC)
+            try:
+                client.subscribe(MQTT_TOPIC)
+            except Exception as e:
+                logger.error(f"❌ Failed to subscribe to MQTT_TOPIC: {e}", exc_info=True)
+                raise
         else:
-            logger.error(f"❌ Connection failed with code {rc}")
+            logger.error(f"❌ Connection failed with code {rc}", exc_info=True)
 
     def on_message(client, userdata, message):
         """Callback function triggered when an MQTT message is received."""
@@ -57,9 +62,11 @@ def listen_mqtt():
                 )
                 logger.info("🚀 DAG successfully triggered!")
             except Exception as e:
-                logger.error(f"❌ Failed to trigger DAG: {e}")
+                logger.error(f"❌ Failed to trigger DAG: {e}", exc_info=True)
+                raise
         except json.JSONDecodeError as error:
-            logger.error(f"❌ Failed to parse MQTT message: {error}")
+            logger.error(f"❌ Failed to parse MQTT message: {error}", exc_info=True)
+            raise
 
     # Initialize MQTT client
     client = mqtt.Client(transport="websockets")
@@ -86,7 +93,9 @@ mqtt_listener_dag = DAG(
         "email_on_failure": False,
         "email_on_retry": False,
         "start_date": datetime(2025, 3, 24),
-        "retries": 3,
+        "retries": 10,
+        "retry_delay": timedelta(seconds=30),
+        "retry_exponential_backoff": True,
     },
     description="Écoute les messages MQTT correspondant aux evènements de production de fichiers, et déclenche un DAG pour chaque message reçu.",
     start_date=datetime(2025, 3, 24),
@@ -99,6 +108,5 @@ mqtt_listener_dag = DAG(
 mqtt_listener = PythonOperator(
     task_id="mqtt_listener",
     python_callable=listen_mqtt,
-    provide_context=True,
     dag=mqtt_listener_dag,
 )

@@ -98,6 +98,12 @@ Microservices described in the `compose.yml` files:
 3. `argo-event-diffusion`: A microservice simulating the creation of an Argo file diffusion event.
 4. `wis2-argo-subscription`: A microservice simulating the global WIS2 broker, receiving notification messages from Argo.
 
+We the [solution is running properly](#get-started), you can simulate another Argo diffusion event from a message in your file system with [`mqttx` client](https://mqttx.app/downloads?os=linux) :
+
+```bash
+mqttx pub -h localhost --debug -p 8081 -l ws -u prod-files-rw -P "prod-files-rw" --path / -t diffusion/files/coriolis/argo/bufr -m "$(cat ./data/event-message/IOPX01_LFVX_071528_RRA.json)"
+```
+
 ## Get Started
 
 To simulate the publication of a notification message on a WIS2 broker upon receiving an Argo data file creation event, follow these steps:
