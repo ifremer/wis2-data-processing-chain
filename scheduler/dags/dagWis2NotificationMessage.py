@@ -14,6 +14,7 @@ from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
+from airflow.utils.trigger_rule import TriggerRule
 
 # --------------------------------------------
 # Configuration of MQTT broker and credentials
@@ -93,7 +94,7 @@ def generate_notification_message_from_stac(stac_item_json: dict):
         )
         raise
 
-    return json.dumps(message, indent=4)
+    return message
 
 
 # ----------------------------
@@ -134,22 +135,30 @@ def generate_notification_message(**kwargs):
     stac_item_json = cloudevents_message["data"]
 
     # save message in a path
-    notification_message = generate_notification_message_from_stac(stac_item_json)
+    notification_message = generate_notification_message_from_stac(
+        stac_item_json
+    )
     # Store message in file system in case of error during process
     message_path = save_message(dag_id, run_id, task_id, notification_message)
 
     logger.info("📩 Notification message generated")
     # Store message in XCom
-    kwargs["ti"].xcom_push(key="message_notification", value=notification_message)
+    kwargs["ti"].xcom_push(
+        key="message_notification",
+        value=json.dumps(notification_message, indent=4)
+    )
 
     # 📌 Stocker le chemin du fichier dans XCom
-    kwargs["ti"].xcom_push(key="message_notification_path", value=str(message_path))
+    kwargs["ti"].xcom_push(
+        key="message_notification_path", value=str(message_path)
+    )
 
 
 def pub_notification_message(**kwargs):
     """Publish notification message to MQTT Broker."""
     notification_message = kwargs["ti"].xcom_pull(
-        task_ids="generate_notification_message_task", key="message_notification"
+        task_ids="generate_notification_message_task",
+        key="message_notification"
     )
 
     if not notification_message:
@@ -161,13 +170,16 @@ def pub_notification_message(**kwargs):
     client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
 
     try:
-        logging.info(f"🔗 Connection to MQTT broker : {MQTT_BROKER}:{MQTT_PORT}...")
+        logging.info(
+            f"🔗 Connection to MQTT broker : {MQTT_BROKER}:{MQTT_PORT}..."
+        )
         client.connect(MQTT_BROKER, MQTT_PORT, 60)
         client.loop_start()
         result, mid = client.publish(MQTT_TOPIC, notification_message)
         if result != mqtt.MQTT_ERR_SUCCESS:
             logger.error(
-                f"❌ MQTT publish failed: result={result}, mid={mid}", exc_info=True
+                f"❌ MQTT publish failed: result={result}, mid={mid}",
+                exc_info=True
             )
             raise RuntimeError("MQTT Publish Error")
         logger.info(f"📤 Message sent → {MQTT_TOPIC} : {notification_message}")
@@ -184,14 +196,11 @@ def cleanup_on_success(**kwargs):
     dag_id = kwargs["dag"].dag_id
     run_id = kwargs["run_id"]
 
-    if kwargs["dag_run"].get_state() == "success":
-        deleted = cleanup_message_storage(dag_id, run_id)
-        if deleted:
-            logger.info("🧹 Message backup cleaned up successfully.")
-        else:
-            logger.warning("⚠️ No message backup found to clean.")
+    deleted = cleanup_message_storage(dag_id, run_id)
+    if deleted:
+        logger.info("🧹 Message backup cleaned up successfully.")
     else:
-        logger.warning("⚠️ DAG did not complete successfully; cleanup skipped.")
+        logger.warning("⚠️ No message backup found to clean.")
 
 
 # Define DAG to process a WIS2 notification message
@@ -265,6 +274,7 @@ pub_notification_message_task = PythonOperator(
 cleanup_task = PythonOperator(
     task_id="cleanup_message_storage_task",
     python_callable=cleanup_on_success,
+    trigger_rule=TriggerRule.ALL_SUCCESS,
     dag=process_message_dag,
 )
 
