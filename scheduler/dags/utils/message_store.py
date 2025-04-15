@@ -5,7 +5,7 @@ from pathlib import Path
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
-BASE_DIR = Path("/tmp/messages/dag")
+BASE_DIR = Path("/tmp/messages/dags")
 
 
 def save_message(dag_id: str, run_id: str, task_id: str, message: dict) -> Path:

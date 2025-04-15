@@ -7,5 +7,6 @@ broker/data/*.db
 
 # Airflow logs
 scheduler/logs/*
+scheduler/data/*
 
 !.gitkeep
