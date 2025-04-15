@@ -88,12 +88,12 @@ def convert_checksum(hex_str, method="sha3-256"):
 
 
 # Exemple d'utilisation avec SHA3-256
-file_path = "/home/lbruvryl/Téléchargements/R7901113_022.nc"
+file_path = "/home/lbruvryl/development/sources/gitlab.ifremer.fr/amrit/development/wis2-mqtt-broker/data/event-message/IOPX01_LFVX_071528.json"
 
 multihash_hex = generate_multihash_hex(file_path)
 multihash_base64 = generate_checksum_base64(file_path)
 hash_base64 = generate_multihash_base64_without_prefix(file_path)
-hash_base64_url = generate_multihash_base64_without_prefix_url("https://data-argo.ifremer.fr/etc/bufr/202503/IOPX01_LFVX_251403.BU")
+# hash_base64_url = generate_multihash_base64_without_prefix_url("https://data-argo.ifremer.fr/etc/bufr/202504/IOPX01_LFVX_071528.BU")
 
 print(f"from STAC : {multihash_hex}")
 print(f"to WIS2 : {hash_base64}")

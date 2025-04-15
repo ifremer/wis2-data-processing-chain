@@ -78,6 +78,7 @@ The project is structured as follows:
 - `scheduler/dags`: Airflow DAGs.
 - `scheduler/logs`: Airflow logs.
 - `scheduler/plugins`: Airflow plugins.
+- `scheduler/data`: Airflow externalised DAGs data, to store event / notifications from the DAGs in case of error
 
 ## Services
 
@@ -97,6 +98,12 @@ Microservices described in the `compose.yml` files:
 2. `scheduler/compose.yml`: 9 microservices enabling local execution of the Airflow scheduler ([official documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html)). Airflow triggers the processing chain (creation of a WIS2 notification message) each time an event is received (new data file creation).
 3. `argo-event-diffusion`: A microservice simulating the creation of an Argo file diffusion event.
 4. `wis2-argo-subscription`: A microservice simulating the global WIS2 broker, receiving notification messages from Argo.
+
+We the [solution is running properly](#get-started), you can simulate another Argo diffusion event from a message in your file system with [`mqttx` client](https://mqttx.app/downloads?os=linux) :
+
+```bash
+mqttx pub -h localhost --debug -p 8081 -l ws -u prod-files-rw -P "prod-files-rw" --path / -t diffusion/files/coriolis/argo/bufr -m "$(cat ./data/event-message/bufr-creation-cloudevent.json)"
+```
 
 ## Get Started
 
@@ -125,3 +132,79 @@ docker compose down
 ```bash
 docker compose down --volumes --rmi all
 ```
+
+## Classic Use Case
+
+Once the application is running locally, access the Airflow web interface at <http://localhost:8080> using the default credentials (`airflow` / `airflow`).
+
+Filter the view to show only active DAGs. You will see the two DAGs related to this project:
+
+![Airflow active DAGs](/assets/images/airflow_actives_dags.png)
+
+- `📂 WIS2 - Listen file diffusion event`: This DAG subscribes to file diffusion topics on the MQTT broker. When a file diffusion event is received, it triggers the publication DAG.
+- `🔔 WIS2 - Publish notification message`: This DAG is triggered by a diffusion event. It processes, validates, and publishes a WIS2 notification message.
+
+As a demonstration, a first diffusion event is automatically sent when the system becomes ready.
+
+Click on each DAG to inspect the status of individual tasks:
+
+- `📂 WIS2 - Listen file diffusion event` contains a single task that listens on the MQTT broker. If you click on the task, you can access the logs and view the received events.
+
+![Listener DAG status](/assets/images/listener_dag_status.png)
+
+- `🔔 WIS2 - Publish notification message` includes several tasks that handle the generation, validation, and publication of the notification message. You can inspect the logs of each task. In the example below, the message was successfully published:
+
+To simulate another file diffusion event, run the following Docker command:
+
+```bash
+docker compose run argo-event-diffusion
+```
+
+Alternatively, you can send a CloudEvent message manually using the [`mqttx`](https://mqttx.app/downloads?os=linux) client:
+
+```bash
+mqttx pub -h localhost --debug -p 8081 -l ws -u prod-files-rw -P "prod-files-rw" --path / -t diffusion/files/coriolis/argo/bufr -m "$(cat /path-to-data/cloudevents-message.json)"
+```
+
+---
+
+## What to Do in Case of an Error?
+
+If an error occurs during the `🔔 WIS2 - Publish notification message` process, a copy of the original event is saved when received. You can find the stored message at:
+
+```text
+./scheduler/data/{{dag_id}}/{{run_id}}/{{task_id}}.json
+```
+
+### ✅ To fix and retry
+
+You can edit the message and clear the DAG to rerun it.
+
+#### Option 1 – Using the command line
+
+```bash
+# Edit the CloudEvent message
+vim ./scheduler/data/{{dag_id}}/{{run_id}}/{{task_id}}.json
+
+# Clear and rerun the DAG after editing
+docker exec -it wis2-mqtt-broker-airflow-worker-1 airflow tasks clear wis2-publish-message-notification \
+  -s "2025-04-15T15:00:47" \
+  -e "2025-04-15T15:00:48" \
+  --yes
+```
+
+💡 **Tip**: To retrieve the exact `dag_run` execution date:
+
+```bash
+docker exec -it wis2-mqtt-broker-airflow-worker-1 airflow dags list-runs -d wis2-publish-message-notification
+```
+
+#### Option 2 – From the Airflow web interface
+
+1. Edit the message file depending on the error:  
+   `./scheduler/data/{{dag_id}}/{{run_id}}/{{task_id}}.json`
+2. Open the Airflow UI at [http://localhost:8080](http://localhost:8080)
+3. Click on the DAG and locate the failed run:  
+   ![Select DAG Failed](/assets/images/select_failed_dag_run.png)
+4. Click the **"Clear"** button and choose **"Clear existing tasks"**:  
+   ![Clear existing tasks](/assets/images/clear_dag_existing_tasks.png)
