@@ -102,7 +102,7 @@ Microservices described in the `compose.yml` files:
 We the [solution is running properly](#get-started), you can simulate another Argo diffusion event from a message in your file system with [`mqttx` client](https://mqttx.app/downloads?os=linux) :
 
 ```bash
-mqttx pub -h localhost --debug -p 8081 -l ws -u prod-files-rw -P "prod-files-rw" --path / -t diffusion/files/coriolis/argo/bufr -m "$(cat ./data/event-message/IOPX01_LFVX_071528_RRA.json)"
+mqttx pub -h localhost --debug -p 8081 -l ws -u prod-files-rw -P "prod-files-rw" --path / -t diffusion/files/coriolis/argo/bufr -m "$(cat ./data/event-message/bufr-creation-cloudevent.json)"
 ```
 
 ## Get Started
@@ -146,18 +146,55 @@ Choose to show only active Dags, to see the 2 Dags dedicated to this project.
 
 As a demonstration, a first file diffusion event is automatically send when the system is ready.
 
-Clic on the DAGs to see their detailed status task by task, 
+Clic on the DAGs to see their detailed status task by task :
 
 - `📂 WIS2 - Listen file diffusion event` DAG have only one task that listen on the MQTT broker, if you clic on the task, you can access to the logs en see event reception.
 
 ![Listener DAG status](/assets/images/listener_dag_status.png)
 
-- `🔔 WIS2 - Publish notification message` DAG have several tasks to generate, validate and publish notification message, it is possible to consult the logs of each tasks, here for exemple we can see that the notification message is send succefully.
+- `🔔 WIS2 - Publish notification message` DAG have several tasks to generate, validate and publish notification messages. it is possible to consult the logs of each task, in the next example we can see that the notification message is send succefully :
 
-![Publish DAG status](/assets/images/publish_dag_status.png)
+Now you want to simulate another file diffusion event you can run the next docker command :
 
-TODO : example on how to send another message
+```bash
+docker compose run argo-event-diffusion
+```
+
+Or you can send the CloudEvent message that you want from your file system by installing [`mqttx` client](https://mqttx.app/downloads?os=linux)
+
+```bash
+mqttx pub -h localhost --debug -p 8081 -l ws -u prod-files-rw -P "prod-files-rw" --path / -t diffusion/files/coriolis/argo/bufr -m "$(cat /path-to-data/cloudevents-message.json)"
+```
 
 ## What to do in case of error ?
 
-TODO
+In case of error in the during `🔔 WIS2 - Publish notification message` process, a copy of the diffusion event is done when received. You can access to the message in next directory :  `./scheduler/data/{{dag_id}}/{{run_id}}/{{task_id}}.json`.
+
+Edit the event message to fix the error en clear the DAG to run it again :
+
+- In command line with right values for `dag_id`, `run_id` and `task_id`.
+
+```bash
+# edit cloudevents message
+vim ./scheduler/data/{{dag_id}}/{{run_id}}/{{task_id}}.json
+# Clear and execute DAG after fix on message
+docker exec -it wis2-mqtt-broker-airflow-worker-1 airflow tasks clear wis2-publish-message-notification \
+  -s "2025-04-15T15:00:47" \
+  -e "2025-04-15T15:00:48" \
+  --yes
+```
+
+**Astuce** : to know exact date of dag_run
+
+```bash
+docker exec -it wis2-mqtt-broker-airflow-worker-1 airflow dags list-runs -d wis2-publish-message-notification
+```
+
+- From the web interface
+
+1. Fix the message file depends of the error `./scheduler/data/{{dag_id}}/{{run_id}}/{{task_id}}.json`
+2. Navigate to your DAG in the Airflow web interface (e.g. <http://localhost:8080>)
+3. Click the dag run that failed
+  ![Select DAG Failed](/assets/images/select_failed_dag_run.png)
+4. Click on "Clear" button and "Clear existing tasks"
+  ![Select DAG Failed](/assets/images/clear_dag_existing_tasks.png)

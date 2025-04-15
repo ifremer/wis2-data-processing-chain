@@ -6,7 +6,7 @@ import time
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 import base64
-from utils.message_store import save_message, cleanup_message_storage
+from utils.message_store import save_message, load_message, cleanup_message_storage
 import multihash
 import paho.mqtt.client as mqtt
 import pystac
@@ -102,15 +102,28 @@ def generate_notification_message_from_stac(stac_item_json: dict):
 # ----------------------------
 def validate_stac_specification(**kwargs):
     """Validate STAC message format."""
-    cloudevents_message = kwargs["dag_run"].conf
+    cloudevents_message = None
     dag_id = kwargs["dag"].dag_id
     run_id = kwargs["run_id"]
     task_id = kwargs["task"].task_id
 
-    # Store message in file system in case of error during process
-    save_message(dag_id, run_id, task_id, cloudevents_message)
+    try:
+        # Try to reload message if an execution failed → reload message from disk
+        cloudevents_message = load_message(dag_id, run_id, task_id)
+        logger.info("♻️ Reloaded event message from disk.")
+    except Exception:
+        # if file does not exists, no execution failed so ignore exception
+        logger.info("🥇 No data to reload, let's ge message incomming message")
+
+    # Normal execution → get message from conf
+    if cloudevents_message is None:
+        cloudevents_message = kwargs["dag_run"].conf
+        # Store message in file system in case of error during process
+        save_message(dag_id, run_id, task_id, cloudevents_message)
+        logger.info("💾 Saved incoming message to disk, in case of error.")
 
     stac_item_json = cloudevents_message["data"]
+    print(stac_item_json)
 
     try:
         stac_item = pystac.Item.from_dict(stac_item_json)
@@ -135,30 +148,24 @@ def generate_notification_message(**kwargs):
     stac_item_json = cloudevents_message["data"]
 
     # save message in a path
-    notification_message = generate_notification_message_from_stac(
-        stac_item_json
-    )
+    notification_message = generate_notification_message_from_stac(stac_item_json)
     # Store message in file system in case of error during process
     message_path = save_message(dag_id, run_id, task_id, notification_message)
 
     logger.info("📩 Notification message generated")
     # Store message in XCom
     kwargs["ti"].xcom_push(
-        key="message_notification",
-        value=json.dumps(notification_message, indent=4)
+        key="message_notification", value=json.dumps(notification_message, indent=4)
     )
 
     # 📌 Stocker le chemin du fichier dans XCom
-    kwargs["ti"].xcom_push(
-        key="message_notification_path", value=str(message_path)
-    )
+    kwargs["ti"].xcom_push(key="message_notification_path", value=str(message_path))
 
 
 def pub_notification_message(**kwargs):
     """Publish notification message to MQTT Broker."""
     notification_message = kwargs["ti"].xcom_pull(
-        task_ids="generate_notification_message_task",
-        key="message_notification"
+        task_ids="generate_notification_message_task", key="message_notification"
     )
 
     if not notification_message:
@@ -170,16 +177,13 @@ def pub_notification_message(**kwargs):
     client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
 
     try:
-        logging.info(
-            f"🔗 Connection to MQTT broker : {MQTT_BROKER}:{MQTT_PORT}..."
-        )
+        logging.info(f"🔗 Connection to MQTT broker : {MQTT_BROKER}:{MQTT_PORT}...")
         client.connect(MQTT_BROKER, MQTT_PORT, 60)
         client.loop_start()
         result, mid = client.publish(MQTT_TOPIC, notification_message)
         if result != mqtt.MQTT_ERR_SUCCESS:
             logger.error(
-                f"❌ MQTT publish failed: result={result}, mid={mid}",
-                exc_info=True
+                f"❌ MQTT publish failed: result={result}, mid={mid}", exc_info=True
             )
             raise RuntimeError("MQTT Publish Error")
         logger.info(f"📤 Message sent → {MQTT_TOPIC} : {notification_message}")

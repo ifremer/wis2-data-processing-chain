@@ -2,7 +2,6 @@ import json
 import logging
 import shutil
 from pathlib import Path
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 BASE_DIR = Path("/tmp/messages/dags")
@@ -14,11 +13,10 @@ def save_message(dag_id: str, run_id: str, task_id: str, message: dict) -> Path:
     Returns the path where the message is stored.
     """
     try:
-        timestamp = datetime.now().strftime("%Y%m%dT%H%M%SZ")
         dir_path = BASE_DIR / dag_id / run_id
         dir_path.mkdir(parents=True, exist_ok=True)
 
-        message_path = dir_path / f"{task_id}_{timestamp}.json"
+        message_path = dir_path / f"{task_id}.json"
 
         with open(message_path, "w", encoding="utf-8") as f:
             json.dump(message, f, indent=4)
@@ -31,9 +29,12 @@ def save_message(dag_id: str, run_id: str, task_id: str, message: dict) -> Path:
     return message_path
 
 
-def load_message(path: Path) -> dict:
+def load_message(dag_id: str, run_id: str, task_id: str) -> dict:
     """Load a saved message from a file."""
-    with open(path, "r", encoding="utf-8") as f:
+    dir_path = BASE_DIR / dag_id / run_id
+    message_path = dir_path / f"{task_id}.json"
+    print(message_path)
+    with open(message_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
