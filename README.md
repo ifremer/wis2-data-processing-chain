@@ -78,6 +78,7 @@ The project is structured as follows:
 - `scheduler/dags`: Airflow DAGs.
 - `scheduler/logs`: Airflow logs.
 - `scheduler/plugins`: Airflow plugins.
+- `scheduler/data`: Airflow externalised DAGs data, to store event / notifications from the DAGs in case of error
 
 ## Services
 
@@ -131,3 +132,32 @@ docker compose down
 ```bash
 docker compose down --volumes --rmi all
 ```
+
+## Classic use case
+
+Once the application is running locally, access to Airflow web interface on <https://localhost:8080> (`airflow`/`airflow`).
+
+Choose to show only active Dags, to see the 2 Dags dedicated to this project.
+
+![Airflow active DAGs](/assets/images/airflow_actives_dags.png)
+
+- `📂 WIS2 - Listen file diffusion event` : This DAG is listening on file diffusion topics of the MQTT Broker and when a diffusion event is receive it trigger the publication DAG.
+- `🔔 WIS2 - Publish notification message` : This DAG is triggered when a diffusion event is receive to process, validate and publish a WIS2 notification message.
+
+As a demonstration, a first file diffusion event is automatically send when the system is ready.
+
+Clic on the DAGs to see their detailed status task by task, 
+
+- `📂 WIS2 - Listen file diffusion event` DAG have only one task that listen on the MQTT broker, if you clic on the task, you can access to the logs en see event reception.
+
+![Listener DAG status](/assets/images/listener_dag_status.png)
+
+- `🔔 WIS2 - Publish notification message` DAG have several tasks to generate, validate and publish notification message, it is possible to consult the logs of each tasks, here for exemple we can see that the notification message is send succefully.
+
+![Publish DAG status](/assets/images/publish_dag_status.png)
+
+TODO : example on how to send another message
+
+## What to do in case of error ?
+
+TODO

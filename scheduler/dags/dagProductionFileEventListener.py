@@ -85,7 +85,7 @@ def listen_mqtt():
 # Define the main DAG for MQTT listening
 mqtt_listener_dag = DAG(
     dag_id="wis2-listener-production-file",
-    dag_display_name="📂 WIS2 - Ecoute production d'un fichier de données",
+    dag_display_name="📂 WIS2 - Listen file diffusion events",
     default_args={
         "owner": "lbruvryl",
         "depends_on_past": False,
@@ -97,7 +97,7 @@ mqtt_listener_dag = DAG(
         "retry_delay": timedelta(seconds=30),
         "retry_exponential_backoff": True,
     },
-    description="Écoute les messages MQTT correspondant aux evènements de production de fichiers, et déclenche un DAG pour chaque message reçu.",
+    description="Listen file diffusion event from MQTT broker, trigger another DAG uppon message reception.",
     start_date=datetime(2025, 3, 24),
     schedule_interval="@once",
     catchup=False,

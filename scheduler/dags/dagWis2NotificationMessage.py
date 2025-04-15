@@ -207,7 +207,7 @@ def cleanup_on_success(**kwargs):
 # trigger by : wis2-listener-production-file
 process_message_dag = DAG(
     dag_id="wis2-publish-message-notification",
-    dag_display_name="🔔 WIS2 - Publication de messages de notifications",
+    dag_display_name="🔔 WIS2 - Publish notification message",
     default_args={
         "owner": "lbruvryl",
         "email": ["lbruvryl@ifremer.fr"],
@@ -215,7 +215,7 @@ process_message_dag = DAG(
         "email_on_retry": False,
         "retries": 5,
     },
-    description="Envoi de messages de notifications MQTT pour WMO Information System (WIS2).",
+    description="Publish notification messages to WMO Information System (WIS2) on MQTT broker.",
     schedule_interval=None,  # Permet au DAG de tourner en continu
     catchup=False,
     is_paused_upon_creation=False,  # Active le DAG au lancement d'Airflow
