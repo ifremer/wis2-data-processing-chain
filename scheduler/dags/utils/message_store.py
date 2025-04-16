@@ -4,7 +4,7 @@ import shutil
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
-BASE_DIR = Path("/tmp/messages/dags")
+BASE_DIR = Path("/opt/airflow/messages/")
 
 
 def save_message(dag_id: str, run_id: str, task_id: str, message: dict) -> Path:

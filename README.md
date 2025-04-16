@@ -170,15 +170,88 @@ mqttx pub -h localhost --debug -p 8081 -l ws -u prod-files-rw -P "prod-files-rw"
 
 ## What to Do in Case of an Error?
 
-If an error occurs during the `🔔 WIS2 - Publish notification message` process, a copy of the original event is saved when received. You can find the stored message at:
+If an error occurs during the `🔔 WIS2 - Publish notification message` process, a copy of the original event is saved when received. You can find and edit the message stored : `./scheduler/data/{{dag_id}}/{{run_id}}/{{task_id}}.json`
 
-```text
-./scheduler/data/{{dag_id}}/{{run_id}}/{{task_id}}.json
+| Method                      | Recommended?   | Advantages                  | Drawbacks                           |
+| --------------------------- | -------------- | --------------------------- | ----------------------------------- |
+| ✅ Re-trigger with conf     | ✅ YES         | Clean, traceable, resilient | Creates a new DAG run               |
+| 🔁 Clearing tasks          | ⚠️ Sometimes | Quick                       | May re-run already successful tasks |
+| 🔧 Modifying existing conf | ❌ NO          | Not possible (by design)    | Unsafe and unsupported              |
+
+### ✅ To fix and retrigger
+
+This solution is the cleanest because actions are tracable and resilent.
+
+#### Option 1 : Using Airflow REST APIs
+
+💡 **Tip**: Use the following command to list DAG runs and retrieve the `run_id` and `execution_date`:
+
+```bash
+curl -X GET "http://localhost:8080/api/v1/dags/{{dag_id}}/dagRuns" --user "airflow:airflow"
 ```
 
-### ✅ To fix and retry
+- Edit the saved event message
 
-You can edit the message and clear the DAG to rerun it.
+```bash
+# Edit the CloudEvent message
+vim ./scheduler/data/{{dag_id}}/{{run_id}}/{{task_id}}.json
+```
+
+- Trigger a new DAG run with the updated configuration
+
+```bash
+curl -X POST "http://localhost:8080/api/v1/dags/{{dag_id}}/dagRuns" \
+  -H "Content-Type: application/json" \
+  --user "airflow:airflow" \
+  -d '{
+    "conf": '"$(cat ./scheduler/data/{{dag_id}}/{{run_id}}/{{task_id}}.json)"'
+  }'
+```
+
+- Clean up stored message after successful reprocessing
+
+```bash
+rm -Rf ./scheduler/data/{{dag_id}}/{{run_id}}
+```
+
+- Document the recovery on the failed DAG run (Status and comment)
+
+#### Option 2 : Using the command line
+
+⚠️ **Warning** : you need to be connected to the server where airflow is running.
+
+💡 **Tip**: Use the following command to list DAG runs and retrieve the run_id and execution_date:
+
+```bash
+docker exec -it wis2-mqtt-broker-airflow-worker-1 airflow dags list-runs -d {{dag_id}}
+```
+
+- Edit the saved event message
+
+```bash
+# Edit the CloudEvent message
+vim ./scheduler/data/{{dag_id}}/{{run_id}}/{{task_id}}.json
+```
+
+- Trigger a new DAG run with the updated configuration
+
+```bash
+docker exec -it wis2-mqtt-broker-airflow-worker-1 airflow dags trigger \
+  -c "$(cat ./scheduler/data/{{dag_id}}/{{run_id}}/{{task_id}}.json)" \
+  {{dag_id}}
+```
+
+- Clean up stored message after successful reprocessing
+
+```bash
+rm -Rf ./scheduler/data/{{dag_id}}/{{run_id}}
+```
+
+- Document the recovery on the failed DAG run (Status and comment)
+
+### 🔁 To fix and retry – From the Airflow web interface
+
+This solution is Quicker but as it's not tracable, it is not the best option.
 
 #### Option 1 – Using the command line
 
@@ -199,9 +272,9 @@ docker exec -it wis2-mqtt-broker-airflow-worker-1 airflow tasks clear wis2-publi
 docker exec -it wis2-mqtt-broker-airflow-worker-1 airflow dags list-runs -d wis2-publish-message-notification
 ```
 
-#### Option 2 – From the Airflow web interface
+#### Option 2 - From the Airflow web interface
 
-1. Edit the message file depending on the error:  
+1. After fixing the message stored depending on the error:  
    `./scheduler/data/{{dag_id}}/{{run_id}}/{{task_id}}.json`
 2. Open the Airflow UI at [http://localhost:8080](http://localhost:8080)
 3. Click on the DAG and locate the failed run:  
