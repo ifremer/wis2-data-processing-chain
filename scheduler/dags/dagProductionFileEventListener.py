@@ -34,6 +34,6 @@ with DAG(
         dag_id_to_trigger="wis2-publish-message-notification",
         mqtt_broker=Variable.get("MQTT_BROKER_DOMAIN", default_var="broker"),
         mqtt_port=Variable.get("MQTT_BROKER_PORT", default_var=8081),
-        mqtt_username=Variable.get("MQTT_ARGO_USERNAME", default_var="wis2-argo-rw"),
-        mqtt_password=Variable.get("MQTT_ARGO_PASSWORD", default_var="wis2-argo-rw"),
+        mqtt_username=Variable.get("MQTT_ARGO_USERNAME", default_var="prod-files-rw"),
+        mqtt_password=Variable.get("MQTT_ARGO_PASSWORD", default_var="prod-files-rw"),
     )

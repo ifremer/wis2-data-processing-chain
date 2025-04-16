@@ -7,23 +7,26 @@ from cloudevents.http import from_json
 from cloudevents.conversion import to_structured
 from airflow.models import BaseOperator
 from airflow.api.common.trigger_dag import trigger_dag
-logger = logging.getLogger(__name__)
+from typing import Optional
 
 
 class MqttSubOperator(BaseOperator):
+    """
+    Airflow operator to subscribe to a MQTT topic and trigger a DAG upon receiving a CloudEvent message.
+    """
+
     def __init__(
         self,
-        topic,
-        dag_id_to_trigger,
-        mqtt_broker=None,
-        mqtt_port=None,
-        mqtt_username=None,
-        mqtt_password=None,
-        ssl_enabled=False,
+        topic: str,
+        dag_id_to_trigger: str,
+        mqtt_broker: Optional[str] = None,
+        mqtt_port: Optional[int] = 8081,
+        mqtt_username: Optional[str] = None,
+        mqtt_password: Optional[str] = None,
+        ssl_enabled: bool = False,
         *args,
         **kwargs,
     ):
-
         super().__init__(*args, **kwargs)
         self.topic = topic
         self.dag_id_to_trigger = dag_id_to_trigger
@@ -35,84 +38,77 @@ class MqttSubOperator(BaseOperator):
 
     def execute(self, context):
         """
-        Continuously listens to MQTT messages and triggers the `process_message_dag` for each received message.
+        Entrypoint when the operator is executed within a DAG.
         """
 
         def on_connect(client, userdata, flags, rc):
             if rc == 0:
-                logger.info("✅ Successfully connected to the MQTT broker")
+                self.log.info("✅ Successfully connected to the MQTT broker")
                 try:
                     client.subscribe(self.topic)
+                    self.log.info(f"📡 Subscribed to topic: {self.topic}")
                 except Exception as e:
-                    logger.error(
-                        f"❌ Failed to subscribe to MQTT_TOPIC: {e}", exc_info=True
-                    )
+                    self.log.exception(f"❌ Failed to subscribe to topic: {e}")
                     raise
             else:
-                logger.error(f"❌ Connection failed with code {rc}", exc_info=True)
+                self.log.error(f"❌ Connection failed with code {rc}")
 
         def on_disconnect(client, userdata, rc):
             if rc != 0:
-                logger.warning(
-                    f"⚠️ Disconnected unexpectedly with code {rc}. Reconnecting..."
-                )
+                self.log.warning(f"⚠️ Disconnected (code {rc}). Attempting reconnect...")
+                time.sleep(5)
                 try:
-                    time.sleep(5)
                     client.reconnect()
                 except Exception as e:
-                    logger.error(f"❌ Failed to reconnect: {e}")
-
-        def resilient_loop(client):
-            while True:
-                try:
-                    logger.info("🔄 Starting MQTT loop_forever()")
-                    client.loop_forever()
-                except Exception as e:
-                    logger.error(f"❌ MQTT loop failed: {e}")
-                    time.sleep(5)
-                    try:
-                        logger.info("🔁 Attempting to reconnect to MQTT broker...")
-                        client.reconnect()
-                    except Exception as err:
-                        logger.error(f"⛔ Reconnection failed: {err}")
-                        time.sleep(30)  # backoff before retry
+                    self.log.exception("❌ Failed to reconnect to MQTT broker")
+                    raise
 
         def on_message(client, userdata, message):
-            """Callback function triggered when an MQTT message is received."""
+            """
+            Callback triggered on message reception.
+            Expects valid CloudEvent JSON.
+            """
             try:
                 payload = message.payload.decode("utf-8")
-                event = from_json(payload)  # Validate as a CloudEvent
+                event = from_json(payload)
                 headers, body = to_structured(event)
 
-                logger.info(
-                    f"✅ Valid CloudEvent received: {event['type']} from {event['source']}"
-                )
-                logger.info(f"📩 Message payload: {body}, Headers: {headers}")
+                self.log.info(f"✅ CloudEvent received: {event['type']} from {event['source']}")
+                self.log.debug(f"📩 Payload: {body}")
 
-                # Trigger the processing DAG with the received event data
                 try:
                     trigger_dag(
                         dag_id=self.dag_id_to_trigger,
                         conf=body,
                         replace_microseconds=False,
                     )
-                    logger.info("🚀 DAG successfully triggered!")
+                    self.log.info(f"🚀 DAG '{self.dag_id_to_trigger}' triggered")
                 except Exception as e:
-                    logger.error(f"❌ Failed to trigger DAG: {e}", exc_info=True)
+                    self.log.exception("❌ Failed to trigger DAG")
                     raise
-            except json.JSONDecodeError as error:
-                logger.error(f"❌ Failed to parse MQTT message: {error}", exc_info=True)
+            except json.JSONDecodeError as e:
+                self.log.exception("❌ Invalid JSON received")
                 raise
 
-        def test_connection(self):
-            client = mqtt.Client(transport="websockets")
-            client.username_pw_set(self.username, self.password)
-            if self.ssl_enabled:
-                client.tls_set()
-            client.connect(self.broker, self.port, 60)
-            client.disconnect()
+        def start_mqtt_loop(client):
+            """
+            Resilient infinite MQTT listening loop.
+            """
+            while True:
+                try:
+                    self.log.info("🔄 Starting MQTT client loop_forever()")
+                    client.loop_forever()
+                except Exception as e:
+                    self.log.exception("❌ MQTT loop encountered an error")
+                    time.sleep(5)
+                    try:
+                        self.log.info("🔁 Attempting MQTT reconnection...")
+                        client.reconnect()
+                    except Exception as reconnect_err:
+                        self.log.error(f"⛔ Reconnection failed: {reconnect_err}")
+                        time.sleep(30)  # backoff before retry
 
-        # Initialize MQTT client
+        # MQTT Client setup
         client = mqtt.Client(transport="websockets")
         if self.ssl_enabled:
             client.tls_set()
@@ -120,14 +116,26 @@ class MqttSubOperator(BaseOperator):
         client.username_pw_set(self.username, self.password)
         client.on_connect = on_connect
         client.on_message = on_message
-        client.on_disconnect = on_disconnect  # 👈 important
+        client.on_disconnect = on_disconnect
 
-        # Connect to the broker and start listening
         try:
+            self.log.info(f"🔌 Connecting to broker {self.broker}:{self.port}")
             client.connect(self.broker, self.port, 60)
         except Exception as e:
-            logger.error(f"❌ Initial connection to broker failed: {e}")
-            return
+            self.log.exception(f"❌ Initial connection failed {e}")
+            raise
 
-        # Launch loop with resilience
-        resilient_loop(client)
+        start_mqtt_loop(client)
+
+    def test_connection(self):
+        """
+        Simple test method to verify connection parameters.
+        """
+        client = mqtt.Client(transport="websockets")
+        if self.ssl_enabled:
+            client.tls_set()
+
+        client.username_pw_set(self.username, self.password)
+        client.connect(self.broker, self.port, 60)
+        client.disconnect()
+        self.log.info("✅ MQTT connection test succeeded")
