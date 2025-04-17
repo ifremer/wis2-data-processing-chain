@@ -1,7 +1,7 @@
 # dags/dagProductionFileEventListener.py
 
 from datetime import datetime, timedelta
-from mqtt_operator import MqttSubOperator
+from mqtt_sub_operator import MqttSubOperator
 from airflow import DAG
 from airflow.models import Variable
 
@@ -31,7 +31,7 @@ with DAG(
     MqttSubOperator(
         task_id="mqtt_listener",
         topic="diffusion/files/coriolis/argo/#",
-        dag_id_to_trigger="wis2-publish-message-notification",
+        dag_ids_to_trigger=["wis2-publish-message-notification"],
         mqtt_broker=Variable.get("MQTT_BROKER_DOMAIN", default_var="broker"),
         mqtt_port=Variable.get("MQTT_BROKER_PORT", default_var=8081),
         mqtt_username=Variable.get("MQTT_ARGO_USERNAME", default_var="prod-files-rw"),

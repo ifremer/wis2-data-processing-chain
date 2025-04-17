@@ -1,24 +1,23 @@
 import json
-import logging
 import time
+from typing import Optional
 
 import paho.mqtt.client as mqtt
 from cloudevents.http import from_json
 from cloudevents.conversion import to_structured
 from airflow.models import BaseOperator
 from airflow.api.common.trigger_dag import trigger_dag
-from typing import Optional
 
 
 class MqttSubOperator(BaseOperator):
     """
-    Airflow operator to subscribe to a MQTT topic and trigger a DAG upon receiving a CloudEvent message.
+    Airflow operator to subscribe to a MQTT topic and trigger DAGs upon receiving a CloudEvent message.
     """
 
     def __init__(
         self,
         topic: str,
-        dag_id_to_trigger: str,
+        dag_ids_to_trigger: list[str],
         mqtt_broker: Optional[str] = None,
         mqtt_port: Optional[int] = 8081,
         mqtt_username: Optional[str] = None,
@@ -29,7 +28,7 @@ class MqttSubOperator(BaseOperator):
     ):
         super().__init__(*args, **kwargs)
         self.topic = topic
-        self.dag_id_to_trigger = dag_id_to_trigger
+        self.dag_ids_to_trigger = dag_ids_to_trigger
         self.broker = mqtt_broker
         self.port = int(mqtt_port)
         self.username = mqtt_username
@@ -76,16 +75,18 @@ class MqttSubOperator(BaseOperator):
                 self.log.info(f"✅ CloudEvent received: {event['type']} from {event['source']}")
                 self.log.debug(f"📩 Payload: {body}")
 
-                try:
-                    trigger_dag(
-                        dag_id=self.dag_id_to_trigger,
-                        conf=body,
-                        replace_microseconds=False,
-                    )
-                    self.log.info(f"🚀 DAG '{self.dag_id_to_trigger}' triggered")
-                except Exception as e:
-                    self.log.exception("❌ Failed to trigger DAG")
-                    raise
+                for dag_id in self.dag_ids_to_trigger:
+                    try:
+                        trigger_dag(
+                            dag_id=dag_id,
+                            conf=body,
+                            replace_microseconds=False,
+                        )
+                        self.log.info(f"🚀 DAG '{dag_id}' triggered successfully")
+                    except Exception as e:
+                        self.log.exception(f"❌ Failed to trigger DAG '{dag_id}'")
+                        # Optionnel : continue ou stop selon ton besoin
+                        # raise  # si tu veux bloquer l'exécution en cas d'erreur
             except json.JSONDecodeError as e:
                 self.log.exception("❌ Invalid JSON received")
                 raise

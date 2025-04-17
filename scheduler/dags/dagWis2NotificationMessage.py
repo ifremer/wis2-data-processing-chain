@@ -1,30 +1,18 @@
 import logging
-import os
 import json
 import uuid
-import time
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 import base64
 from utils.message_store import save_message, load_message, cleanup_message_storage
+from mqtt_pub_operator import MqttPubOperator
 import multihash
-import paho.mqtt.client as mqtt
 import pystac
 from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
 from airflow.utils.trigger_rule import TriggerRule
-
-# --------------------------------------------
-# Configuration of MQTT broker and credentials
-# --------------------------------------------
-MQTT_BROKER = Variable.get("MQTT_BROKER_DOMAIN", default_var="broker")
-MQTT_PORT = Variable.get("MQTT_BROKER_PORT", default_var=8081)
-MQTT_TOPIC = "origin/a/wis2/fr-ifremer-argo/core/data/ocean/surface-based-observations/drifting-ocean-profilers"
-SSL_ENABLED = Variable.get("MQTT_BROKER_SSL_ENABLED", default_var=False)
-MQTT_USERNAME = Variable.get("MQTT_ARGO_USERNAME", default_var="wis2-argo-rw")
-MQTT_PASSWORD = Variable.get("MQTT_ARGO_PASSWORD", default_var="wis2-argo-rw")
 
 logger = logging.getLogger(__name__)
 
@@ -162,40 +150,6 @@ def generate_notification_message(**kwargs):
     kwargs["ti"].xcom_push(key="message_notification_path", value=str(message_path))
 
 
-def pub_notification_message(**kwargs):
-    """Publish notification message to MQTT Broker."""
-    notification_message = kwargs["ti"].xcom_pull(
-        task_ids="generate_notification_message_task", key="message_notification"
-    )
-
-    if not notification_message:
-        raise ValueError("Invalid or missing message for MQTT broker !")
-
-    client = mqtt.Client(transport="websockets")
-    if SSL_ENABLED:
-        client.tls_set()
-    client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
-
-    try:
-        logging.info(f"🔗 Connection to MQTT broker : {MQTT_BROKER}:{MQTT_PORT}...")
-        client.connect(MQTT_BROKER, MQTT_PORT, 60)
-        client.loop_start()
-        result, mid = client.publish(MQTT_TOPIC, notification_message)
-        if result != mqtt.MQTT_ERR_SUCCESS:
-            logger.error(
-                f"❌ MQTT publish failed: result={result}, mid={mid}", exc_info=True
-            )
-            raise RuntimeError("MQTT Publish Error")
-        logger.info(f"📤 Message sent → {MQTT_TOPIC} : {notification_message}")
-        time.sleep(2)
-        client.loop_stop()
-        client.disconnect()
-        logger.info("🔌 Disconnect from MQTT Broker.")
-    except Exception as e:
-        logger.error(f"❌ MQTT Connection Error : {e}", exc_info=True)
-        raise
-
-
 def cleanup_on_success(**kwargs):
     dag_id = kwargs["dag"].dag_id
     run_id = kwargs["run_id"]
@@ -267,12 +221,18 @@ validate_key_performance_indicators_task = BashOperator(
     dag=process_message_dag,
 )
 
-# Operator dedicated to publish WIS2 notification
-pub_notification_message_task = PythonOperator(
+# Custom Operator dedicated to publish notification on broker
+pub_notification_message_task = MqttPubOperator(
     task_id="pub_notification_message_task",
-    python_callable=pub_notification_message,
+    topic="origin/a/wis2/fr-ifremer-argo/core/data/ocean/surface-based-observations/drifting-ocean-profilers",
+    message="{{ ti.xcom_pull(task_ids='generate_notification_message_task', key='message_notification') }}",
+    mqtt_broker=Variable.get("MQTT_BROKER_DOMAIN", default_var="broker"),
+    mqtt_port=Variable.get("MQTT_BROKER_PORT", default_var=8081),
+    mqtt_username=Variable.get("MQTT_ARGO_USERNAME", default_var="wis2-argo-rw"),
+    mqtt_password=Variable.get("MQTT_ARGO_PASSWORD", default_var="wis2-argo-rw"),
     dag=process_message_dag,
 )
+
 
 # Operator dedicated to cleanup files dedicated to this Dag on success
 cleanup_task = PythonOperator(
