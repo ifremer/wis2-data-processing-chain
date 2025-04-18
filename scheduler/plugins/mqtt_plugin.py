@@ -1,5 +1,5 @@
-from scheduler.plugins.operator.mqtt_sub_operator import MqttSubOperator
-from scheduler.plugins.operator.mqtt_pub_operator import MqttPubOperator
+from plugins.operator.mqtt_sub_operator import MqttSubOperator
+from plugins.operator.mqtt_pub_operator import MqttPubOperator
 from airflow.plugins_manager import AirflowPlugin
 
 

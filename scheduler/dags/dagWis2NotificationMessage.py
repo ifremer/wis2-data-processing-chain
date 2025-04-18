@@ -196,7 +196,7 @@ generate_notification_message_task = PythonOperator(
 # Operator to validate WIS2 notification message
 validate_notification_message_task = BashOperator(
     task_id="validate_notification_message_task",
-    bash_command="cat {{ ti.xcom_pull(task_ids='generate_notification_message_task', key='message_notification_path') }} && pywis-pubsub schema sync && pywis-pubsub message validate {{ ti.xcom_pull(task_ids='generate_notification_message_task', key='message_notification_path') }} --verbosity DEBUG",
+    bash_command="pywis-pubsub schema sync && pywis-pubsub message validate {{ ti.xcom_pull(task_ids='generate_notification_message_task', key='message_notification_path') }} --verbosity DEBUG",
     dag=process_message_dag,
 )
 
