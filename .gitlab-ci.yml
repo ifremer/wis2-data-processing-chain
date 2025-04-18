@@ -1,0 +1,11 @@
+include:
+  - component: $CI_SERVER_FQDN/dev-ops/templates/automatisation/ci-cd/pipeline-generic-container-image-multistage@~latest
+
+variables:
+  CONTAINER_IMAGE_BUILD_ENABLE_LAYER_DEVELOPMENT: true
+  CONTAINER_IMAGE_BUILD_ENABLE_LAYER_RUNTIME: false
+  CONTAINER_IMAGE_BUILD_ENABLE_LAYER_UNLAYERED: false
+  CONTAINER_IMAGE_BUILD_ENABLE_LAYER_TEST: true
+  CONTAINER_IMAGE_BUILD_CONTEXT: scheduler
+  CONTAINER_IMAGE_DOCKER_FILE_PATH: scheduler/Dockerfile
+  CI_DEBUG_TRACE: true

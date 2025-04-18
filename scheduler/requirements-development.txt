@@ -1,0 +1,11 @@
+apache-airflow[celery,postgres,statsd]==2.10.3
+paho-mqtt==1.6.1
+pywcmp==0.11.0
+pywis-pubsub==0.8.0
+cloudevents==1.11.0
+pystac
+py-multihash==2.0.1
+pytest
+pytest-mock
+pytest-cov
+mock
