@@ -1,4 +1,3 @@
-import json
 import time
 from typing import Optional
 
@@ -72,7 +71,9 @@ class MqttSubOperator(BaseOperator):
                 event = from_json(payload)
                 headers, body = to_structured(event)
 
-                self.log.info(f"✅ CloudEvent received: {event['type']} from {event['source']} id {event['id']}")
+                self.log.info(
+                    f"✅ CloudEvent received: {event['type']} from {event['source']} id {event['id']}"
+                )
                 self.log.debug(f"📩 Payload: {body}")
 
                 for dag_id in self.dag_ids_to_trigger:
@@ -85,12 +86,10 @@ class MqttSubOperator(BaseOperator):
                         self.log.info(f"🚀 DAG '{dag_id}' triggered successfully")
                     except Exception as e:
                         self.log.exception(f"❌ Failed to trigger DAG '{dag_id}'")
-                        # Optionnel : continue ou stop selon ton besoin
-                        # raise  # si tu veux bloquer l'exécution en cas d'erreur
+                        # raise : we do not want to stop broker connection dag is not triggered
             except Exception as e:
-                self.log.exception("❌ Invalid JSON received")
-                self.log.error(f"❌ Invalid JSON received: {payload}")
-                raise
+                self.log.exception(f"❌ Invalid JSON received : {payload}")
+                # raise : we do not want to stop broker connection if message is not valid
 
         def start_mqtt_loop(client):
             """
