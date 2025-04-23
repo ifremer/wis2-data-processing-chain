@@ -72,7 +72,7 @@ class MqttSubOperator(BaseOperator):
                 event = from_json(payload)
                 headers, body = to_structured(event)
 
-                self.log.info(f"✅ CloudEvent received: {event['type']} from {event['source']}")
+                self.log.info(f"✅ CloudEvent received: {event['type']} from {event['source']} id {event['id']}")
                 self.log.debug(f"📩 Payload: {body}")
 
                 for dag_id in self.dag_ids_to_trigger:
@@ -87,8 +87,9 @@ class MqttSubOperator(BaseOperator):
                         self.log.exception(f"❌ Failed to trigger DAG '{dag_id}'")
                         # Optionnel : continue ou stop selon ton besoin
                         # raise  # si tu veux bloquer l'exécution en cas d'erreur
-            except json.JSONDecodeError as e:
+            except Exception as e:
                 self.log.exception("❌ Invalid JSON received")
+                self.log.error(f"❌ Invalid JSON received: {payload}")
                 raise
 
         def start_mqtt_loop(client):
