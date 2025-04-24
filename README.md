@@ -19,7 +19,7 @@ List of tools and technologies used:
 
 ## Architecture
 
-```{mermaid}
+```mermaid
 flowchart TB;
 %% Styles améliorés
 classDef filesystem fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000,font-weight:bold;
