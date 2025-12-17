@@ -1,13 +1,10 @@
 ---
 include:
-  - component: $CI_SERVER_FQDN/dev-ops/templates/automatisation/ci-cd/pipeline-generic-container-image-multistage@~latest
+  - component: $CI_SERVER_FQDN/dev-ops/templates/automatisation/ci-cd/pipeline-python@~latest
     inputs:
-      container_image_build_context: "scheduler"
-      container_image_build_enable_layer_development: "true"
-      container_image_build_enable_layer_runtime: "false"
-      container_image_build_enable_layer_test: "true"
-      container_image_build_enable_layer_unlayered: "false"
-      container_image_docker_file_path: "scheduler/Dockerfile"
-
-variables:
-    CI_DEBUG_TRACE: "true"
+      container_image_build_context: "src"
+      container_image_docker_file_path: "src/Dockerfile"
+      python_src_path: "src"
+      python_root_package: "wis2_data_processing_chain"
+      pipeline_enable_sonarqube: "false"
+      secret_detection_pipeline_enable: "flase"

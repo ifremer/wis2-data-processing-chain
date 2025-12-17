@@ -1,5 +1,5 @@
 # Python
-scheduler/dags/__pycache__
+__pycache__
 *.pyc
 
 # Local db
@@ -8,5 +8,8 @@ broker/data/*.db
 # Airflow logs
 scheduler/logs/*
 scheduler/data/*
+scheduler/config/*
 
 !.gitkeep
+
+.env*

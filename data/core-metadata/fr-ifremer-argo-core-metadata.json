@@ -9,40 +9,40 @@
         "coordinates": [
             [
                 [
-                    -81,
-                    -79
+                    -180,
+                    -90
                 ],
                 [
-                    -81,
-                    79
+                    -180,
+                    90
                 ],
                 [
-                    81,
-                    79
+                    180,
+                    90
                 ],
                 [
-                    81,
-                    -79
+                    180,
+                    -90
                 ],
                 [
-                    -81,
-                    -79
+                    -180,
+                    -90
                 ]
             ]
         ]
     },
     "time": {
         "interval": [
-            "2004-01-19",
+            "1997-01-01T00:00:00Z",
             ".."
         ],
         "resolution": "PT15M"
     },
     "properties": {
-        "created": "2024-12-03T14:00:00Z",
-        "updated": "2024-12-03T14:00:00Z",
+        "created": "2025-08-20T14:00:00Z",
+        "updated": "2025-08-20T14:00:00Z",
         "type": "dataset",
-        "title": "Argo marine floats vertical profiles",
+        "title": "Argo marine floats vertical profiles distributed by Coriolis",
         "description": "Argo is an international program to observe the interior of the ocean with a fleet of profiling floats drifting in the deep ocean currents (https://argo.ucsd.edu). Argo GDAC is a dataset of 10 billion in situ ocean observations from 20 000 profiling floats (4.000 active) which started 25 years ago. Argo GDAC is a collection of 3 million NetCDF files. It is a major asset for ocean and climate science, a contributor to IOCCP reports. Argo data are available with a one click download https://doi.org/10.17882/42182",
         "status": {
             "id": "operational",
@@ -129,7 +129,7 @@
                 "mediaType": "application/x-cor-hrit"
             }
         ],
-        "contactPoint": "https://data.ifremer.fr/Centre-de-donnees/Contact",
+        "contactPoint": "http://en.data.ifremer.fr/data-Center/Contact",
         "wmo:dataPolicy": "core"
     },
     "links": [
@@ -160,9 +160,16 @@
                         "typicalFilesize": "680100",
                         "typicalFilename": "BR4903659_010.nc",
                         "iproductSamples": [
+                            "https://data-argo.ifremer.fr/etc/bufr/202508/IOPX01_LFVX_200603.BU",
                             "https://data-argo.ifremer.fr/dac/coriolis/4903659/profiles/BR4903659_010.nc"
                         ],
                         "documentation": [
+                            {
+                                "rel": "canonical",
+                                "title": "Manual on Codes Volume I.2 Part C, Attachment I, Examples of templates for the transmission in BUFR",
+                                "type": "text/html",
+                                "href": "https://community.wmo.int/en/activity-areas/wis/template-examples"
+                            },
                             {
                                 "rel": "canonical",
                                 "title": "Argo NetCDF format and vocabularies",
@@ -195,6 +202,12 @@
         {
             "rel": "help",
             "type": "text/html",
+            "title": "WMO Manual on Codes, Volume I.2 – International Codes",
+            "href": "https://library.wmo.int/idurl/4/35625"
+        },
+        {
+            "rel": "help",
+            "type": "text/html",
             "title": "Argo NetCDF format",
             "href": "https://dx.doi.org/10.13155/29825"
         }
@@ -205,7 +218,7 @@
             "type": "text/html",
             "title": "Argo floats dashboard",
             "uriTemplate": "https://fleetmonitoring.euro-argo.eu/",
-                "sampleRequest": "https://fleetmonitoring.euro-argo.eu/dashboard?Status=Active&Variable=OXYGEN"
-            }
+            "sampleRequest": "https://fleetmonitoring.euro-argo.eu/dashboard?Status=Active&Variable=OXYGEN"
+        }
     ]
 }

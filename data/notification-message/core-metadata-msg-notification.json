@@ -11,16 +11,16 @@
         "pubtime": "2025-03-25T15:20:02.688883+00:00",
         "integrity": {
             "method": "sha512",
-            "value": "a22ca1409b3ccdf859a8606b71fae6f0e3dcdcf528663789b0fa003fefba2809178821f0a9ba2f787ca7b6cb88f6caa9d586c232c89581eb58dccf45d5d56418"
+            "value": "12c8ac07163c9cf9453d00d2ae399ce4fb7e9354f0126fc6c954f0e73fbde8ae4c7edda4bbe2cc6b215026a7a64def69d8720a02af4d386ac8fe91d5401803ba"
         },
         "datetime": "2025-03-18T16:03:51.322418+00:00"
     },
     "links": [
         {
-            "href": "https://data-argo.ifremer.fr/etc/bufr/202503/fr-ifremer-argo-core-metadata.json",
+            "href": "https://data-argo.ifremer.fr/etc/fr-ifremer-argo-core-metadata.json",
             "rel": "canonical",
             "type": "application/json",
-            "length": 7408
+            "length": 8172
         }
     ]
 }

@@ -1,14 +1,14 @@
 {
-	"id": "IOPX01_LFVX_251403",
-	"source": "co05XXXXXX",
+	"id": "Profile7901113_022A",
+	"source": "co050203",
 	"specversion": "1.0",
 	"type": "fr.ifremer.file.diffusion",
-	"subject": "diffusion/files/coriolis/argo/bufr",
+	"subject": "diffusion/files/coriolis/argo/netcdf",
 	"time": "2025-03-28T14:31:00Z",
 	"datacontenttype": "application/json; charset=utf-8",
 	"dataschema": "https://github.com/radiantearth/stac-spec/tree/master/item-spec/json-schema",
 	"data": {
-		"id": "IOPX01_LFVX_251403",
+		"id": "Profile7901113_022A",
 		"bbox": [
 			21.059306666666668,
 			-36.29987333333333,
@@ -18,17 +18,17 @@
 		"type": "Feature",
 		"links": [],
 		"assets": {
-			"IOPX01_LFVX_251403.BU": {
-				"href": "https://data-argo.ifremer.fr/etc/bufr/202503/IOPX01_LFVX_251403.BU",
-				"type": "application/bufr",
-				"title": "Profile file IOPX01_LFVX_251403.BU",
+			"R7901113_022.nc": {
+				"href": "https://data-argo.ifremer.fr/dac/coriolis/7901113/profiles/R7901113_022.nc",
+				"type": "application/x-netcdf",
 				"roles": [
 					"data",
 					"metadata"
 				],
-				"created": "2025-03-25T15:03:00.00Z",
-				"file:size": 940,
-				"file:checksum": "1620f2ba024b0986ab8e7d3ec275505c59070d453f4764e48ad9eaad9559bf76b906"
+				"title": "Profile file R7901113_022.nc",
+				"created": "2024-11-10T00:35:00.00Z",
+				"file:size": 25620,
+				"file:checksum": "1620f5e592ff51b46503d64cab008ef73270d8cac1c4b99a2559ff5ba7b5e1045781"
 			}
 		},
 		"geometry": {
@@ -42,7 +42,7 @@
 			"dac": "CORIOLIS",
 			"title": "Profile7901113_022A",
 			"mission": "Argo BSH",
-			"datetime": "2024-11-09T21:08:00.00Z",
+			"datetime": "2024-11-09T21:08:00.000000Z",
 			"platform": "7901113",
 			"providers": [
 				{
