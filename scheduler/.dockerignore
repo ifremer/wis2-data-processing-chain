@@ -1,6 +1,2 @@
 **/**
-!dags/*
-!plugins/*
-!tests/*
-!requirements-*.txt
-!makefile
+!requirements.txt

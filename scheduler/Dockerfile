@@ -1,27 +1,29 @@
-FROM gitlab-registry.ifremer.fr/ifremer-commons/docker/images/python:3.9-slim AS development
+FROM apache/airflow:3.0.6
 
-WORKDIR /develop
+ARG APPTAINER_VERSION=1.4.2
 
-COPY requirements-*.txt .
-COPY makefile .
+# install Apptainer
+USER root
+WORKDIR /opt
 
-RUN \
-    apt-get update && apt-get install -y make && \
-    make install-runtime && \
-    make install-dev
+# librairies requises avant installation
+RUN apt-get update && apt-get install -y \
+    ca-certificates cpio curl e2fsprogs fuse-overlayfs \
+    fuse3 rpm2cpio squashfuse uidmap && \
+    rm -rf /var/lib/apt/lists/*
 
-FROM development AS test
+# Script officiel unprivileged et ranges subuid/subgid pour le user airflow
+RUN curl -proto "=https" --tlsv1.2 -fsSL https://raw.githubusercontent.com/apptainer/apptainer/main/tools/install-unprivileged.sh \
+    | bash -s - -v ${APPTAINER_VERSION} /opt/apptainer && \
+    ln -sf /opt/apptainer/bin/apptainer /usr/local/bin/apptainer && \
+    ln -sf /usr/local/bin/apptainer /usr/local/bin/singularity || true && \ 
+    grep -q '^airflow:' /etc/subuid || echo 'airflow:100000:65536' >> /etc/subuid ; \
+    grep -q '^airflow:' /etc/subgid || echo 'airflow:100000:65536' >> /etc/subgid
 
-WORKDIR /tests
+# airflow requirement
+USER airflow
+WORKDIR /opt/airflow
 
-COPY . .
+COPY requirements.txt .
 
-RUN \
-    make test
-
-FROM apache/airflow:2.10.3-python3.9 AS runtime
-
-COPY requirements-runtime.txt .
-
-RUN \
-    pip install -r requirements-runtime.txt
+RUN pip install -r requirements.txt

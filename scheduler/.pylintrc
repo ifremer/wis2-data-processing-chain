@@ -1,0 +1,17 @@
+[MESSAGES CONTROL]
+# Désactive les avertissements inutiles dans le contexte Airflow
+disable=
+    import-error,
+    too-few-public-methods,
+    unused-argument,
+    logging-fstring-interpolation,
+    duplicate-code,
+    unused-variable,
+    broad-exception-caught
+
+[FORMAT]
+max-line-length=150
+
+[DESIGN]
+max-args=11
+max-positional-arguments=11

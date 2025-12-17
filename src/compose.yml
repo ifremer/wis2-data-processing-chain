@@ -1,0 +1,7 @@
+# Dedicated to build Python sources in a Docker image used by Airflow DockerOperator
+services:
+  wis2-data-processing-chain:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: wis2-data-processing-chain:latest
