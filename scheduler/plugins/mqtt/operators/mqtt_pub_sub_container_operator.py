@@ -1,13 +1,22 @@
+"""
+Airflow custom operator to publish/subscribe MQTT messages from within
+a containerized environment (Apptainer / Singularity).
+
+This operator wraps a container execution that runs a Python MQTT client
+and injects connection parameters via environment variables.
+"""
+
 from __future__ import annotations
+
 from airflow.providers.singularity.operators.singularity import SingularityOperator
 from mqtt.hooks.mqtt_hook import MqttHook
 
 
 class MqttPubSubContainerOperator(SingularityOperator):
     """
-    Custom operator to run MQTT subscription logic inside a Docker container.
+    Custom operator to run MQTT subscription logic inside a container.
 
-    Inherits from DockerOperator and wraps execution of `mqtt_listener.py`.
+    Inherits from SingularityOperator and wraps execution of `mqtt_client.py`.
     """
 
     def __init__(
@@ -36,19 +45,19 @@ class MqttPubSubContainerOperator(SingularityOperator):
             "APPTAINER_DOCKER_PASSWORD": "{{ var.value.internal_registry_password }}",
         }
 
-        # on priorise l'envoi via fichier
+        # On priorise l'envoi via fichier
         if message_file:
             env_vars["MQTT_MESSAGE_FILE"] = message_file
         elif message:
             env_vars["MQTT_MESSAGE"] = message
 
-        # bind directory if needed
+        # Bind directory if needed
         if bind_directory:
             env_vars["APPTAINER_BIND"] = bind_directory
 
         super().__init__(
             image="docker://gitlab-registry.ifremer.fr/ifremer-commons/docker/internal-images/mqtt-pub-sub:3.12-slim",
-            # image="docker://mqtt-client:latest", TODO : muste try fully local images
+            # image="docker://mqtt-client:latest", TODO: try fully local images
             environment=env_vars,
             command=f"python /app/mqtt_client.py pub --topic {topic}",
             **kwargs,
