@@ -22,7 +22,6 @@ listener_dag = DAG(
         "start_date": datetime(2025, 3, 24),
         "retries": 10,
         "retry_delay": timedelta(seconds=30),
-        "retry_exponential_backoff": True,
     },
     description="Listen file diffusion events from MQTT broker and fanout to processor (1 message = 1 run).",
     schedule="@once",
@@ -34,7 +33,7 @@ listener_dag = DAG(
 
 wait_mqtt_msg_task = MqttMessageSensor(
     task_id="wait_mqtt_msg_task",
-    mqtt_conn_id="mqtt_file_event_local",
+    mqtt_conn_id="mqtt_file_event",
     client_id="argo-mqtt-listener-{{ dag.dag_id }}",
     topic="diffusion/files/coriolis/argo/#",
     qos=1,
@@ -45,4 +44,4 @@ wait_mqtt_msg_task = MqttMessageSensor(
     fanout_conf_extra={},           # ajoute des clés si besoin
     airflow_api_conn_id="airflow_api",
     dag=listener_dag,
-)
+   )

@@ -137,7 +137,7 @@ validate_key_performance_indicators_task = SingularityOperator(
 # Custom Operator dedicated to publish notification on broker
 pub_notification_message_task = MqttPubSubContainerOperator(
     task_id="pub_notification_message_task",
-    mqtt_conn_id="mqtt_notification_message_local",
+    mqtt_conn_id="mqtt_notification_message",
     topic="origin/a/wis2/fr-ifremer-argo/core/data/ocean/surface-based-observations/drifting-ocean-profilers",
     message_file=f"{CONTAINER_MESSAGE_STORE}/generate_notification_message_task.json",
     bind_directory=f"{HOST_MESSAGE_STORE}:{CONTAINER_MESSAGE_STORE}:rw",

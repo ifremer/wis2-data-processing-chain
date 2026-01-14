@@ -7,8 +7,6 @@ Airflow custom sensor: MQTT message sensor (deferrable, infinite stream style).
 """
 
 from __future__ import annotations
-
-from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
 from airflow.exceptions import AirflowException
@@ -19,7 +17,9 @@ from mqtt.hooks.mqtt_hook import MqttHook
 from mqtt.triggers.mqtt_trigger import MqttMessageTrigger
 
 
-class MqttMessageSensor(BaseSensorOperator):  # pylint: disable=too-many-instance-attributes
+class MqttMessageSensor(
+    BaseSensorOperator
+):  # pylint: disable=too-many-instance-attributes
     """
     Sensor déférable "stream infini" :
       - Attend un (petit) batch de messages MQTT (drain window côté Trigger).
@@ -43,7 +43,7 @@ class MqttMessageSensor(BaseSensorOperator):  # pylint: disable=too-many-instanc
         mqtt_conn_id: str,
         topic: str,
         message_regex: Optional[str] = None,
-        timeout: Optional[float] = None,
+        timeout: Optional[float] = 3600,  # one hour by default
         client_id: Optional[str] = None,
         # ----- MQTT v5 / subscription options -----
         protocol: Optional[str] = None,  # "v5" (défaut) | "v311"
@@ -55,7 +55,9 @@ class MqttMessageSensor(BaseSensorOperator):  # pylint: disable=too-many-instanc
         retain_handling: Optional[int] = None,  # 0 send retained | 1 only-new | 2 never
         qos: int = 1,  # override QoS de la Connection
         # ----- Trigger Dag -----
-        fanout_dag_id: Optional[str] = None,  # si défini, déclenche ce DAG pour chaque message
+        fanout_dag_id: Optional[
+            str
+        ] = None,  # si défini, déclenche ce DAG pour chaque message
         fanout_conf_extra: Optional[Dict[str, Any]] = None,  # conf additionnelle
         airflow_api_conn_id: str = "airflow_api",
         **kwargs: Any,
@@ -137,7 +139,7 @@ class MqttMessageSensor(BaseSensorOperator):  # pylint: disable=too-many-instanc
         self.defer(
             trigger=trigger,
             method_name="execute_complete",
-            timeout=timedelta(minutes=30),
+            timeout=self.timeout,
         )
 
     # ---------- phase 2 : on traite le batch puis on se re-défère ----------
@@ -239,7 +241,7 @@ class MqttMessageSensor(BaseSensorOperator):  # pylint: disable=too-many-instanc
         self.defer(
             trigger=trigger,
             method_name="execute_complete",
-            timeout=timedelta(minutes=30),
+            timeout=self.timeout,
         )
 
     # ---------- helper : get API token ----------
