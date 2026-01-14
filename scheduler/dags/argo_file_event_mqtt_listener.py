@@ -44,4 +44,4 @@ wait_mqtt_msg_task = MqttMessageSensor(
     fanout_conf_extra={},           # ajoute des clés si besoin
     airflow_api_conn_id="airflow_api",
     dag=listener_dag,
-   )
+)
