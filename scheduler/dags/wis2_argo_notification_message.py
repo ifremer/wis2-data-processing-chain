@@ -49,8 +49,8 @@ create_host_message_dir = BashOperator(
 # Operator dedicated to create WIS2 notification file
 generate_notification_message_task = SingularityOperator(
     task_id="generate_notification_message_task",
-    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain/fix-stream-infini:feature-latest",
-    # image="docker://wis2-data-processing-chain:latest", TODO : muste try fully local images
+    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain:latest",
+    # image="docker://wis2-data-processing-chain:latest", TODO : must try fully local images
     command="python3 /app/wis2_data_processing_chain/notifications/generate_notification_message.py",
     force_pull=False,
     environment={
@@ -67,7 +67,7 @@ generate_notification_message_task = SingularityOperator(
 # Operator to validate WIS2 notification message
 sync_notification_message_schema_task = SingularityOperator(
     task_id="sync_notification_message_schema_task_task",
-    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain/fix-stream-infini:feature-latest",
+    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain:latest",
     command="pywis-pubsub schema sync --verbosity DEBUG",
     force_pull=False,
     environment={
@@ -80,7 +80,7 @@ sync_notification_message_schema_task = SingularityOperator(
 # Operator to validate WIS2 notification message
 validate_notification_message_task = SingularityOperator(
     task_id="validate_notification_message_task",
-    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain/fix-stream-infini:feature-latest",
+    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain:latest",
     command=f"pywis-pubsub message validate {CONTAINER_MESSAGE_STORE}/generate_notification_message_task.json --verbosity DEBUG",
     force_pull=False,
     environment={
@@ -94,7 +94,7 @@ validate_notification_message_task = SingularityOperator(
 # Operator to validate data (link, size, checksum) from WIS2 notification message
 validate_notification_message_data_task = SingularityOperator(
     task_id="validate_notification_message_data_task",
-    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain/fix-stream-infini:feature-latest",
+    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain:latest",
     command=f"pywis-pubsub message verify {CONTAINER_MESSAGE_STORE}/generate_notification_message_task.json --verbosity DEBUG",
     force_pull=False,
     environment={
@@ -108,7 +108,7 @@ validate_notification_message_data_task = SingularityOperator(
 # Operator to validate WIS2 Notification Message Format (WNM)
 validate_wnm_data_task = SingularityOperator(
     task_id="validate_wnm_data_task",
-    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain/fix-stream-infini:feature-latest",
+    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain:latest",
     command=f"pywis-pubsub ets validate {CONTAINER_MESSAGE_STORE}/generate_notification_message_task.json --verbosity DEBUG",
     force_pull=False,
     environment={
@@ -122,7 +122,7 @@ validate_wnm_data_task = SingularityOperator(
 # Operator to get key performance indicators
 validate_key_performance_indicators_task = SingularityOperator(
     task_id="validate_key_performance_indicators_task",
-    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain/fix-stream-infini:feature-latest",
+    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain:latest",
     command=f"pywis-pubsub kpi validate {CONTAINER_MESSAGE_STORE}/generate_notification_message_task.json --verbosity DEBUG",
     force_pull=False,
     environment={
@@ -137,7 +137,7 @@ validate_key_performance_indicators_task = SingularityOperator(
 # Custom Operator dedicated to publish notification on broker
 pub_notification_message_task = MqttPubSubContainerOperator(
     task_id="pub_notification_message_task",
-    mqtt_conn_id="mqtt_notification_message_local",
+    mqtt_conn_id="mqtt_notification_message",
     topic="origin/a/wis2/fr-ifremer-argo/core/data/ocean/surface-based-observations/drifting-ocean-profilers",
     message_file=f"{CONTAINER_MESSAGE_STORE}/generate_notification_message_task.json",
     bind_directory=f"{HOST_MESSAGE_STORE}:{CONTAINER_MESSAGE_STORE}:rw",
@@ -148,7 +148,7 @@ pub_notification_message_task = MqttPubSubContainerOperator(
 # Operator dedicated to cleanup files dedicated to this Dag on success
 cleanup_message_storage_task = SingularityOperator(
     task_id="cleanup_message_storage_task",
-    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain/fix-stream-infini:feature-latest",
+    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain:latest",
     command="python3 /app/wis2_data_processing_chain/utils/cleanup_data_store.py",
     force_pull=False,
     environment={

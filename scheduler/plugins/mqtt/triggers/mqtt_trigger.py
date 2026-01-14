@@ -1,18 +1,30 @@
+"""
+Airflow custom trigger: MQTT message trigger.
+
+Waits for the first MQTT message on a topic (optional regex filter on payload),
+using paho-mqtt (TCP or WebSockets) with optional MQTT v5 persistent session.
+"""
+
 from __future__ import annotations
-import asyncio, base64, ssl, re
-import logging
+
+import asyncio
+import base64
+import re
+import ssl
 from typing import Any, AsyncIterator, Dict, Optional
-from mqtt.utils import as_bool, norm_transport
+from urllib.parse import urlparse
+
 from airflow.triggers.base import BaseTrigger, TriggerEvent
+from mqtt.utils import as_bool, norm_transport
 
 
-class MqttMessageTrigger(BaseTrigger):
+class MqttMessageTrigger(BaseTrigger):  # pylint: disable=too-many-instance-attributes
     """
     Attend le premier message sur `topic` (regex optionnelle sur payload),
     via paho-mqtt (TCP ou WebSockets), avec support MQTT v5 (session persistante).
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals
         self,
         host: str,
         topic: str,
@@ -41,7 +53,7 @@ class MqttMessageTrigger(BaseTrigger):
         shared_group: Optional[str] = None,  # $share/<group>/<topic>
         # v3.1.1:
         clean_session: Optional[bool] = False,
-    ) -> None:
+    ) -> None:  # pylint: disable=too-many-arguments,too-many-positional-arguments
         super().__init__()
         self.host = host
         self.topic = topic
@@ -72,11 +84,10 @@ class MqttMessageTrigger(BaseTrigger):
         self.clean_session = as_bool(clean_session) if protocol != "v5" else None
 
     def _safe_proxy_desc(self) -> str:
+        """Return a sanitized proxy description for logs (no credentials)."""
         if not self.proxy:
             return "-"
         try:
-            from urllib.parse import urlparse
-
             p = urlparse(self.proxy)
             host = p.hostname or "?"
             port = p.port or "-"
@@ -85,6 +96,7 @@ class MqttMessageTrigger(BaseTrigger):
             return "<invalid-proxy>"
 
     def serialize(self) -> tuple[str, Dict[str, Any]]:
+        """Serialize trigger arguments for the Airflow triggerer process."""
         return (
             "mqtt.triggers.mqtt_trigger.MqttMessageTrigger",
             {
@@ -116,26 +128,24 @@ class MqttMessageTrigger(BaseTrigger):
             },
         )
 
-    async def run(self) -> AsyncIterator[TriggerEvent]:
+    async def run(  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+        self,
+    ) -> AsyncIterator[TriggerEvent]:
+        """Connect, subscribe, and emit a TriggerEvent for the first received batch."""
         try:
+            # Import kept inside run to avoid hard dependency at Airflow parse time.
+            # pylint: disable=import-outside-toplevel
             import paho.mqtt.client as mqtt
-            from urllib.parse import urlparse
 
-            try:
-                from paho.mqtt.subscribeoptions import SubscribeOptions
-            except Exception:
-                SubscribeOptions = None
             try:
                 from paho.mqtt.properties import Properties
                 from paho.mqtt.packettypes import PacketTypes
             except Exception:
-                Properties = None
-                PacketTypes = None
+                Properties = None  # pylint: disable=invalid-name
+                PacketTypes = None  # pylint: disable=invalid-name
         except Exception as e:
             self.log.exception("paho import error")
-            yield TriggerEvent(
-                {"status": "error", "message": f"paho import error: {e}"}
-            )
+            yield TriggerEvent({"status": "error", "message": f"paho import error: {e}"})
             return
 
         loop = asyncio.get_running_loop()
@@ -286,7 +296,9 @@ class MqttMessageTrigger(BaseTrigger):
                     break
 
             self.log.info("batch received: %s message(s)", len(batch))
-            yield TriggerEvent({"status": "batch", "count": len(batch), "messages": batch})
+            yield TriggerEvent(
+                {"status": "batch", "count": len(batch), "messages": batch}
+            )
             return  # ✅ stop here; the finally block will close the client
 
         except Exception as e:

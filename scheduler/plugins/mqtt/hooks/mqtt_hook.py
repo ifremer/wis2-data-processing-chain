@@ -1,12 +1,29 @@
+"""
+Airflow MQTT hook.
+
+This module defines:
+- a dataclass holding normalized MQTT connection configuration
+- a hook that reads an Airflow Connection and converts it into this config
+"""
+
 from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
-from mqtt.utils import as_bool, norm_transport
+from typing import Any, Dict, Optional
+
 from airflow.hooks.base import BaseHook
+from mqtt.utils import as_bool, norm_transport
 
 
 @dataclass
-class MqttConnConfig:
+class MqttConnConfig:  # pylint: disable=too-many-instance-attributes
+    """
+    Normalized MQTT connection configuration.
+
+    This object is built from an Airflow Connection and is meant to be reused
+    by operators, sensors and triggers without re-parsing conn.extra.
+    """
+
     host: str
     port: int = 1883
     username: Optional[str] = None
@@ -25,9 +42,12 @@ class MqttConnConfig:
 
 class MqttHook(BaseHook):
     """
-    Lit une Connection Airflow (conn_id) et produit une MqttConnConfig.
-    - Conn host/port/login/password → basiques
-    - conn.extra (JSON) → champs optionnels (tls, ws_path, proxy, etc.)
+    Airflow Hook for MQTT connections.
+
+    Reads an Airflow Connection (conn_id) and produces a :class:`MqttConnConfig`.
+
+    - Connection host/port/login/password → base parameters
+    - conn.extra (JSON) → optional fields (TLS, transport, proxy, QoS, etc.)
     """
 
     conn_name_attr = "mqtt_conn_id"
@@ -40,6 +60,9 @@ class MqttHook(BaseHook):
         self.mqtt_conn_id = mqtt_conn_id
 
     def get_config(self) -> MqttConnConfig:
+        """
+        Build and return a normalized MQTT configuration from the Airflow Connection.
+        """
         conn = self.get_connection(self.mqtt_conn_id)
         extra: Dict[str, Any] = conn.extra_dejson or {}
 
@@ -56,6 +79,6 @@ class MqttHook(BaseHook):
             transport=norm_transport(extra.get("transport")),
             ws_path=extra.get("ws_path", "/"),
             keepalive=int(extra.get("keepalive", 60)),
-            qos=int(extra.get("qos", 0)),
-            proxy=extra.get("proxy"),  # pour WS
+            qos=int(extra.get("qos", 1)),
+            proxy=extra.get("proxy"),  # WS only
         )

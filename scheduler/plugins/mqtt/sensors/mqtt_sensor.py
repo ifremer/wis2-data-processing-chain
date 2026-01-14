@@ -1,16 +1,25 @@
+"""
+Airflow custom sensor: MQTT message sensor (deferrable, infinite stream style).
+
+- Waits for a small batch of MQTT messages (batching handled by the Trigger).
+- Optionally triggers one downstream DAG run per message (fan-out).
+- Immediately defers again to keep listening (near-permanent connection pattern).
+"""
+
 from __future__ import annotations
-from typing import Any, Optional, Dict, List
-from datetime import timedelta
-import json
+from typing import Any, Dict, List, Optional
+
 from airflow.exceptions import AirflowException
+from airflow.providers.http.hooks.http import HttpHook
 from airflow.sensors.base import BaseSensorOperator
 from airflow.triggers.base import TriggerEvent
-from airflow.providers.http.hooks.http import HttpHook
 from mqtt.hooks.mqtt_hook import MqttHook
 from mqtt.triggers.mqtt_trigger import MqttMessageTrigger
 
 
-class MqttMessageSensor(BaseSensorOperator):
+class MqttMessageSensor(
+    BaseSensorOperator
+):  # pylint: disable=too-many-instance-attributes
     """
     Sensor déférable "stream infini" :
       - Attend un (petit) batch de messages MQTT (drain window côté Trigger).
@@ -29,12 +38,12 @@ class MqttMessageSensor(BaseSensorOperator):
         "airflow_api_conn_id",
     )
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals
         self,
         mqtt_conn_id: str,
         topic: str,
         message_regex: Optional[str] = None,
-        timeout: Optional[float] = None,
+        timeout: Optional[float] = 3600,  # one hour by default
         client_id: Optional[str] = None,
         # ----- MQTT v5 / subscription options -----
         protocol: Optional[str] = None,  # "v5" (défaut) | "v311"
@@ -82,6 +91,7 @@ class MqttMessageSensor(BaseSensorOperator):
 
     # ---------- phase 1 : on se déferre pour écouter ----------
     def execute(self, context):
+        """Defer the task: start listening via the Trigger (stream mode)."""
         cfg = MqttHook(self.mqtt_conn_id).get_config()
         # on prend le qos du sensor si non défini on regarde si il l'est au niveau du hook
         qos_final = self.qos_override if self.qos_override is not None else cfg.qos
@@ -129,12 +139,12 @@ class MqttMessageSensor(BaseSensorOperator):
         self.defer(
             trigger=trigger,
             method_name="execute_complete",
-            timeout=timedelta(minutes=30),
+            timeout=self.timeout,
         )
 
     # ---------- phase 2 : on traite le batch puis on se re-défère ----------
     def execute_complete(self, context, event: Optional[TriggerEvent] = None):
-
+        """Handle the TriggerEvent batch, optionally fan-out, then defer again."""
         if not event or not isinstance(event, dict):
             # on repart écouter (stream infini) même sans event valide
             self.log.warning("MQTT: event manquant/incorrect, on repart en écoute.")
@@ -172,7 +182,7 @@ class MqttMessageSensor(BaseSensorOperator):
                 }
                 endpoint = f"api/v2/dags/{self.fanout_dag_id}/dagRuns"
                 resp = hook.run(endpoint=endpoint, json=body, headers=headers)
-                if not (200 <= resp.status_code < 300):
+                if not 200 <= resp.status_code < 300:
                     # On log et on continue ; pas d’ORM, pas de session locale
                     self.log.error(
                         "Fanout POST %s failed: %s %s",
@@ -195,6 +205,7 @@ class MqttMessageSensor(BaseSensorOperator):
 
     # ---------- helper : re-déférer ----------
     def _rearm(self, context):
+        """Defer again to continue listening (infinite stream)."""
         cfg = MqttHook(self.mqtt_conn_id).get_config()
         qos_final = self.qos_override if self.qos_override is not None else cfg.qos
 
@@ -230,11 +241,12 @@ class MqttMessageSensor(BaseSensorOperator):
         self.defer(
             trigger=trigger,
             method_name="execute_complete",
-            timeout=timedelta(minutes=30),
+            timeout=self.timeout,
         )
 
     # ---------- helper : get API token ----------
     def _get_airflow_api_token(self, hook: HttpHook) -> str:
+        """Authenticate against Airflow API and return a bearer access token."""
         conn = hook.get_connection(self.airflow_api_conn_id)
         extra = conn.extra_dejson or {}
         username = conn.login or extra.get("username")
@@ -247,7 +259,7 @@ class MqttMessageSensor(BaseSensorOperator):
 
         login_payload = {"username": username, "password": password}
         resp = hook.run(endpoint="/auth/token", json=login_payload)
-        if not (200 <= resp.status_code < 300):
+        if not 200 <= resp.status_code < 300:
             raise AirflowException(
                 f"Unable to authenticate against Airflow API ({resp.status_code}): {resp.text}"
             )

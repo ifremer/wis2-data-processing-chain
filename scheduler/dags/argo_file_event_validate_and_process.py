@@ -50,8 +50,8 @@ create_host_message_dir_task = BashOperator(
 # 2) Validate (message vient du conf du run)
 validate_event_message_data_task = SingularityOperator(
     task_id="validate_event_message_data_task",
-    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain/fix-stream-infini:feature-latest",
-    # image="docker://wis2-data-processing-chain:latest", TODO : muste try fully local images
+    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain:latest",
+    # image="docker://wis2-data-processing-chain:latest", TODO : must try fully local images
     command="python3 /app/wis2_data_processing_chain/standards/validate_stac.py",
     force_pull=False,
     environment={
