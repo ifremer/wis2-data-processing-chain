@@ -104,7 +104,7 @@ Metadata management is not included in this demonstration since it only needs to
 - Using Docker + mqttx (*Important* : QoS = 1 for persistance)
 
 ```bash
-docker run --rm --network host -e MQTT_MESSAGE="$(cat ./data/core-metadata/fr-ifremer-argo-core-metadata.json)" emqx/mqttx-cli:v1.11.1 sh -c 'mqttx pub -h localhost --debug -p 8081 -l ws -u prod-files-rw -P prod-files-rw --path / -t diffusion/files/coriolis/argo/bufr -q 1 -m "$MQTT_MESSAGE"'
+docker run --rm --network host -e MQTT_MESSAGE="$(cat ./data/core-metadata/fr-ifremer-argo-core-metadata.json)" emqx/mqttx-cli:v1.11.1 sh -c 'mqttx pub -h localhost --debug -p 8081 -l ws -u wis2-argo-rw -P "wis2-argo-rw" --path / -t origin/a/wis2/fr-ifremer-argo/metadata -m  "$MQTT_MESSAGE"'
 ```
 
 ### Data
