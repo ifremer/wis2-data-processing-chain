@@ -17,7 +17,7 @@
     },
     "links": [
         {
-            "href": "https://data-argo.ifremer.fr/etc/fr-ifremer-argo-core-metadata.json",
+            "href": "https://data-argo.ifremer.fr/etc/wis2/fr-ifremer-argo-core-metadata.json",
             "rel": "canonical",
             "type": "application/json",
             "length": 8172
