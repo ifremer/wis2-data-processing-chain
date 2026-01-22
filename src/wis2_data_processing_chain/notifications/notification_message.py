@@ -52,7 +52,9 @@ def generate_notification_message_from_stac(stac_item_json: dict) -> dict:
                 "properties": {
                     "data_id": data_id,
                     "metadata_id": metadata_id,
-                    "pubtime": datetime.now(timezone.utc).isoformat(),
+                    "pubtime": datetime.now(timezone.utc).strftime(
+                        "%Y-%m-%dT%H:%M:%S.%fZ"
+                    ),
                     "integrity": wis2_integrity,
                     "datetime": stac_item.properties.get("datetime"),
                 },
