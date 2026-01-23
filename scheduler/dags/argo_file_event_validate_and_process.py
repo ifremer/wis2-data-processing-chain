@@ -6,7 +6,6 @@ DAG. This ensures fully isolated, reproducible, and event-driven processing for
 each Argo/WIS2 file-diffusion notification.
 """
 
-
 from __future__ import annotations
 from datetime import datetime, timedelta
 from airflow import DAG
@@ -15,7 +14,11 @@ from airflow.providers.singularity.operators.singularity import SingularityOpera
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
 # Dirs (par run)
-HOST_MESSAGE_STORE = "/opt/airflow/data/message/{{ dag.dag_id }}/{{ dag_run.run_id | replace(':','_') | replace('.','_') }}"
+HOST_DAG_STORE = "/opt/airflow/data/message/{{ dag.dag_id }}"
+RUN_ID_DIRECTORY = "{{ dag_run.run_id | replace(':','_') | replace('.','_') }}"
+HOST_MESSAGE_STORE = (
+    f"{HOST_DAG_STORE}/{RUN_ID_DIRECTORY}"
+)
 CONTAINER_MESSAGE_STORE = "/data"
 
 processor_dag = DAG(
@@ -33,10 +36,10 @@ processor_dag = DAG(
         "retry_exponential_backoff": True,
     },
     description="Validates a single MQTT message, then triggers the publish DAG.",
-    schedule=None,                 # déclenché par le listener
+    schedule=None,  # déclenché par le listener
     catchup=False,
     is_paused_upon_creation=False,
-    max_active_runs=50,            # traite des rafales en parallèle si tu veux
+    max_active_runs=50,  # traite des rafales en parallèle si tu veux
     tags=["MQTT", "Argo", "WIS2"],
 )
 
@@ -77,9 +80,25 @@ trigger_wis2_message_notification_task = TriggerDagRunOperator(
     dag=processor_dag,
 )
 
+# Operator dedicated to cleanup files dedicated to this Dag on success
+cleanup_message_storage_task = SingularityOperator(
+    task_id="cleanup_message_storage_task",
+    image="docker://gitlab-registry.ifremer.fr/amrit/development/wis2-data-processing-chain:1.0.0",
+    command="python3 /app/wis2_data_processing_chain/utils/cleanup_data_store.py",
+    force_pull=False,
+    environment={
+        "APPTAINER_BIND": f"{HOST_DAG_STORE}:{CONTAINER_MESSAGE_STORE}:rw",
+        "RUN_ID": f"{RUN_ID_DIRECTORY}",
+        "APPTAINER_DOCKER_USERNAME": "{{ var.value.wis2_registry_user }}",
+        "APPTAINER_DOCKER_PASSWORD": "{{ var.value.wis2_registry_password }}",
+    },
+    dag=processor_dag,
+)
+
 
 _ = (
     create_host_message_dir_task
     >> validate_event_message_data_task
     >> trigger_wis2_message_notification_task
+    >> cleanup_message_storage_task
 )

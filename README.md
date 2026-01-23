@@ -117,8 +117,16 @@ Microservices described in Docker compose files, the entrypoint compose file is 
 
 Follow dedicated section to [run the system with Docker](#get-started), once the system is running properly, you can simulate a file diffusion event from a message in your file system with Docker and [`mqttx` client](https://mqttx.app/downloads?os=linux) :
 
+- send a message
+
 ```bash
 docker run --rm --network host -e MQTT_MESSAGE="$(cat ./data/event-message/bufr/bufr-creation-cloudevent.json)" emqx/mqttx-cli:v1.11.1 sh -c 'mqttx pub -h localhost --debug -p 8081 -l ws -u prod-files-rw -P prod-files-rw --path / -t diffusion/files/coriolis/argo/bufr -q 1 -m "$MQTT_MESSAGE"'
+```
+
+- monitor the "data retrieval logs" from wis2 (during validation period)
+
+```bash
+mqttx sub -h gb.wis2dev.io -p 8883 --protocol mqtts -u everyone -P 'everyone' -t monitor/a/wis2/fr-ifremer-argo -f json
 ```
 
 ## Get Started
