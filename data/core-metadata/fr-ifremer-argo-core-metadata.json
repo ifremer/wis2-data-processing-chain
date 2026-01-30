@@ -1,5 +1,5 @@
 {
-    "id": "urn:wmo:md:int-coriolis:EO:EUM:DAT:MSG:ARGO",
+    "id": "urn:wmo:md:fr-ifremer-argo:EO:EUM:DAT:MSG:ARGO",
     "conformsTo": [
         "http://wis.wmo.int/spec/wcmp/2/conf/core"
     ],
@@ -141,7 +141,7 @@
         },
         {
             "rel": "items",
-            "channel": "origin/a/wis2/fr-ifremer-argo/data/core",
+            "channel": "origin/a/wis2/fr-ifremer-argo/core/data/ocean/surface-based-observations/drifting-ocean-profilers",
             "href": "wss://mosquitto.ifremer.fr:443",
             "type": "application/geo+json",
             "title": "Data notifications"

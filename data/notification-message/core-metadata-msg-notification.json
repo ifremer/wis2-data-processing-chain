@@ -1,5 +1,5 @@
 {
-    "id": "64a9bec3-5cb6-4373-aa97-75fddbf94583",
+    "id": "64a9bec3-5cb6-4373-aa97-75fddb999999",
     "conformsTo": [
         "http://wis.wmo.int/spec/wnm/1/conf/core"
     ],
@@ -8,19 +8,19 @@
     "properties": {
         "data_id": "wis2/fr-ifremer-argo/core/metadata/fr-ifremer-argo-core-metadata.json",
         "metadata_id": "urn:wmo:md:fr-ifremer-argo:cor:msg:argo",
-        "pubtime": "2025-03-25T15:20:02.688883+00:00",
+        "pubtime": "2026-01-30T15:10:00Z",
         "integrity": {
             "method": "sha512",
-            "value": "12c8ac07163c9cf9453d00d2ae399ce4fb7e9354f0126fc6c954f0e73fbde8ae4c7edda4bbe2cc6b215026a7a64def69d8720a02af4d386ac8fe91d5401803ba"
+            "value": "nVKwlSvKVvsPx1T+RXJgxb81zdcFf+3XfmXHKR2OLIh85AhNB6JQ2HRKmmnaW38j/gxOsDMp6hfLQuyY8x7K0Q=="
         },
-        "datetime": "2025-03-18T16:03:51.322418+00:00"
+        "datetime": "2026-01-30T10:55:00Z"
     },
     "links": [
         {
             "href": "https://data-argo.ifremer.fr/etc/wis2/fr-ifremer-argo-core-metadata.json",
-            "rel": "canonical",
+            "rel": "update",
             "type": "application/json",
-            "length": 8172
+            "length": 8233
         }
     ]
 }
