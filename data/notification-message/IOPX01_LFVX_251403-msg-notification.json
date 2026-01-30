@@ -14,7 +14,7 @@
     "properties": {
         "data_id": "wis2/fr-ifremer-argo/core/data/bufr/202503/IOPX01_LFVX_251403.BU",
         "metadata_id": "urn:wmo:md:fr-ifremer-argo:cor:msg:argo",
-        "pubtime": "2025-03-27T13:44:17.659964+00:00",
+        "pubtime": "2026-01-30T13:44:17Z",
         "integrity": {
             "method": "sha512",
             "value": "1935bc352efe80f3264f16819c6bb41be2e1974a08205130b46a15df6e3a0c19ed46d8a3d22477f3acc9b238a63d43316c81add94c6689653c48c226d4beeb1e"
