@@ -19,3 +19,11 @@ cd src
 docker build -t wis2-data-processing-chain .
 docker run -it --rm -e TASK_ID="generate-task" -e MESSAGE_STORE_DIR="/tmp" -e MESSAGE="$(cat ../data/event-message/bufr/bufr-creation-cloudevent.json)" -v /tmp:/tmp wis2-data-processing-chain python3 /app/wis2_data_processing_chain/notifications/generate_notification_message.py
 ```
+
+- Generate WIS2 notification metadata message
+
+```bash
+cd src
+docker build -t wis2-data-processing-chain .
+docker run -it --rm -e TASK_ID="generate-matadata-task" -e MESSAGE_STORE_DIR="/tmp" -e MESSAGE="$(cat ../data/core-metadata/fr-ifremer-argo-core-metadata.json)" -v /tmp:/tmp wis2-data-processing-chain python3 /app/wis2_data_processing_chain/notifications/generate_metadata_notification_message.py
+```

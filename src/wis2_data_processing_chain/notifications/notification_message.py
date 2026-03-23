@@ -1,4 +1,5 @@
 import base64
+import hashlib
 import uuid
 import logging
 from urllib.parse import urlparse
@@ -8,6 +9,15 @@ import multihash
 import pystac
 
 logger = logging.getLogger(__name__)
+
+
+def to_rfc3339_z(dt: datetime) -> str:
+    return (
+        dt.astimezone(timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
 
 
 def compute_multihash_integrity(multihash_hex: str) -> dict:
@@ -21,6 +31,10 @@ def compute_multihash_integrity(multihash_hex: str) -> dict:
     except Exception as e:
         logger.error(f"❌ Error computing multihash integrity: {e}", exc_info=True)
         raise
+
+
+def compute_sha512_base64(content: bytes) -> str:
+    return base64.b64encode(hashlib.sha512(content).digest()).decode("ascii")
 
 
 def get_url_last_n_segments(url: str, n: int) -> str:
@@ -72,3 +86,37 @@ def generate_notification_message_from_stac(stac_item_json: dict) -> dict:
     except Exception:
         logger.exception("❌ Error building WIS2 message.")
         raise
+
+
+def generate_notification_message_from_metadata(content_str: str) -> dict:
+    content_bytes = content_str.encode("utf-8")
+
+    integrity_value = compute_sha512_base64(content_bytes)
+    length = len(content_bytes)
+
+    now = to_rfc3339_z(datetime.now(timezone.utc))
+
+    return {
+        "id": str(uuid.uuid4()),
+        "conformsTo": ["http://wis.wmo.int/spec/wnm/1/conf/core"],
+        "type": "Feature",
+        "geometry": None,
+        "properties": {
+            "data_id": "wis2/fr-ifremer-argo/metadata/core/fr-ifremer-argo-core-metadata.json",
+            "metadata_id": "urn:wmo:md:fr-ifremer-argo:cor:msg:argo",
+            "pubtime": now,
+            "integrity": {
+                "method": "sha512",
+                "value": integrity_value,
+            },
+            "datetime": now,
+        },
+        "links": [
+            {
+                "href": "https://data-argo.ifremer.fr/etc/wis2/fr-ifremer-argo-core-metadata.json",
+                "rel": "update",
+                "type": "application/json",
+                "length": length,
+            }
+        ],
+    }
