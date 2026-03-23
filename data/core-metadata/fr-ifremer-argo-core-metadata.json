@@ -141,7 +141,7 @@
         },
         {
             "rel": "items",
-            "channel": "origin/a/wis2/fr-ifremer-argo/core/data/ocean/surface-based-observations/drifting-ocean-profilers",
+            "channel": "origin/a/wis2/fr-ifremer-argo/data/core/ocean/surface-based-observations/drifting-ocean-profilers",
             "href": "wss://mosquitto.ifremer.fr:443",
             "type": "application/geo+json",
             "title": "Data notifications"
