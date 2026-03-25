@@ -89,7 +89,7 @@ def generate_notification_message_from_stac(stac_item_json: dict) -> dict:
 
 
 def generate_notification_message_from_metadata(content_str: str) -> dict:
-    content_bytes = content_str.encode("utf-8")
+    content_bytes = base64.b64decode(content_str)
 
     integrity_value = compute_sha512_base64(content_bytes)
     length = len(content_bytes)

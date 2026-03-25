@@ -40,9 +40,7 @@ def main():
         if not args.message:
             raise ValueError("No message provided")
 
-        notification = generate_notification_message_from_metadata(
-            args.message
-        )
+        notification = generate_notification_message_from_metadata(args.message)
 
         print(json.dumps(notification, indent=2))
 
