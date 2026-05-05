@@ -1,5 +1,5 @@
 {
-    "id": "urn:wmo:md:fr-ifremer-argo:EO:EUM:DAT:MSG:ARGO",
+    "id": "urn:wmo:md:fr-ifremer-argo:cor:msg:argo",
     "conformsTo": [
         "http://wis.wmo.int/spec/wcmp/2/conf/core"
     ],
