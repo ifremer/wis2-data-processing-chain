@@ -1,0 +1,26 @@
+{
+  "id": "09b212bf-0dd1-43d3-8387-00d05c6ea105",
+  "conformsTo": [
+    "http://wis.wmo.int/spec/wnm/1/conf/core"
+  ],
+  "type": "Feature",
+  "geometry": null,
+  "properties": {
+    "data_id": "wis2/fr-ifremer-argo/metadata/core/fr-ifremer-argo-core-metadata_20260911_143631.json",
+    "metadata_id": "urn:wmo:md:fr-ifremer-argo:EO:EUM:DAT:MSG:ARGO",
+    "pubtime": "2026-05-05T10:03:17Z",
+    "integrity": {
+      "method": "sha512",
+      "value": "7znQoO2APTbdZTikP7Oa8twr1xjCZ1zWdNyqEenh+aMw+M1elrLbKoqHDn2WHxwuzG/6xl6MXKBuwMsLB7J6hw=="
+    },
+    "datetime": "2026-09-11T12:36:31Z"
+  },
+  "links": [
+    {
+      "href": "https://data-argo.ifremer.fr/etc/wis2/fr-ifremer-argo-core-metadata.json",
+      "rel": "deletion",
+      "type": "application/json",
+      "length": 8226
+    }
+  ]
+}
